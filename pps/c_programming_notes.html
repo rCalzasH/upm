@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notas de C — Guía Completa</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f12;
+    --surface: #13161b;
+    --surface2: #1a1e25;
+    --border: #252a33;
+    --accent: #00d9a3;
+    --accent2: #f97316;
+    --accent3: #6366f1;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0a0c0f;
+    --keyword: #c084fc;
+    --type: #38bdf8;
+    --string: #86efac;
+    --comment: #475569;
+    --number: #fbbf24;
+    --func: #f97316;
+    --op: #e2e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* GRID NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,217,163,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,217,163,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 0 0 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+
+  .sidebar-logo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sidebar-logo span {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    display: block;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav-section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 1.2rem 1.5rem 0.4rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.5rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent);
+    background: rgba(0,217,163,0.06);
+    border-left-color: var(--accent);
+  }
+
+  .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    min-width: 16px;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: 260px;
+    padding: 3rem 4rem 6rem;
+    max-width: calc(100% - 260px);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 4rem 0 5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 5rem;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+  }
+
+  .hero h1 {
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-stat .lbl {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 6rem;
+    scroll-margin-top: 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(0,217,163,0.08);
+    border: 1px solid rgba(0,217,163,0.2);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-top: 0.4rem;
+  }
+
+  .section h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+
+  .section h2 small {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section h3::before {
+    content: '//';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+
+  p {
+    color: var(--text-dim);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .code-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .code-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .code-dots span:nth-child(1) { background: #ff5f56; }
+  .code-dots span:nth-child(2) { background: #ffbd2e; }
+  .code-dots span:nth-child(3) { background: #27c93f; }
+
+  pre {
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* SYNTAX HIGHLIGHT */
+  .kw  { color: var(--keyword); font-weight: 600; }
+  .ty  { color: var(--type); }
+  .str { color: var(--string); }
+  .cmt { color: var(--comment); font-style: italic; }
+  .num { color: var(--number); }
+  .fn  { color: var(--func); }
+  .op  { color: var(--accent); }
+  .pp  { color: var(--accent3); }
+
+  /* TABLES */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 0.75rem 1.2rem;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.83rem;
+  }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--type);
+    font-size: 0.78rem;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(0,217,163,0.05);
+    padding: 1rem 1.2rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.5rem 0;
+    font-size: 0.88rem;
+    color: var(--text-dim);
+  }
+
+  .callout.warn {
+    border-color: var(--accent2);
+    background: rgba(249,115,22,0.05);
+  }
+
+  .callout.info {
+    border-color: var(--accent3);
+    background: rgba(99,102,241,0.05);
+  }
+
+  .callout strong {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+
+  .callout.warn strong { color: var(--accent2); }
+  .callout.info strong { color: var(--accent3); }
+
+  /* TAGS */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(0,217,163,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,217,163,0.2);
+    margin: 0.15rem;
+  }
+
+  .tag.purple {
+    background: rgba(99,102,241,0.1);
+    color: #818cf8;
+    border-color: rgba(99,102,241,0.2);
+  }
+
+  .tag.orange {
+    background: rgba(249,115,22,0.1);
+    color: var(--accent2);
+    border-color: rgba(249,115,22,0.2);
+  }
+
+  /* GRID CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(0,217,163,0.3);
+    transform: translateY(-2px);
+  }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+
+  .card-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* INLINE CODE */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* PROGRESS BAR */
+  .toc-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    z-index: 200;
+    transition: width 0.1s;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 2rem 1.5rem; max-width: 100%; }
+    .hero h1 { font-size: 2.8rem; }
+  }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* FADE IN */
+  .section {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section:nth-child(2)  { animation-delay: 0.05s; }
+  .section:nth-child(3)  { animation-delay: 0.10s; }
+  .section:nth-child(4)  { animation-delay: 0.15s; }
+  .section:nth-child(5)  { animation-delay: 0.20s; }
+</style>
+</head>
+<body>
+
+<div class="toc-progress" id="progress"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <span style="font-size:1.6rem">∁</span>
+      <div>
+        Lenguaje C
+        <span>Apuntes completos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Contenidos</div>
+  <a class="nav-item" href="#s1"><span class="nav-num">01</span> Introducción</a>
+  <a class="nav-item" href="#s2"><span class="nav-num">02</span> Variables y tipos</a>
+  <a class="nav-item" href="#s3"><span class="nav-num">03</span> Operadores</a>
+  <a class="nav-item" href="#s4"><span class="nav-num">04</span> Control de flujo</a>
+  <a class="nav-item" href="#s5"><span class="nav-num">05</span> Entrada / Salida</a>
+  <a class="nav-item" href="#s6"><span class="nav-num">06</span> Punteros</a>
+  <a class="nav-item" href="#s7"><span class="nav-num">07</span> Funciones</a>
+  <a class="nav-item" href="#s8"><span class="nav-num">08</span> Arrays</a>
+  <a class="nav-item" href="#s9"><span class="nav-num">09</span> Estructuras</a>
+  <a class="nav-item" href="#s10"><span class="nav-num">10</span> Memoria dinámica</a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">// Apuntes de programación</div>
+    <h1>Lenguaje <em>C</em></h1>
+    <p class="hero-desc">Guía completa de referencia. Desde la estructura básica de un programa hasta la gestión manual de memoria dinámica.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><span class="num">10</span><span class="lbl">temas</span></div>
+      <div class="hero-stat"><span class="num">C99</span><span class="lbl">estándar</span></div>
+      <div class="hero-stat"><span class="num">GCC</span><span class="lbl">compilador</span></div>
+    </div>
+  </div>
+
+  <!-- ─── 1. INTRODUCCIÓN ─── -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2><small>Fundamentos</small>Introducción al lenguaje C</h2>
+    </div>
+
+    <h3>Estructura de un programa</h3>
+    <p>Todo programa en C tiene una función de entrada obligatoria: <code>main()</code>. El preprocesador gestiona las directivas <code>#include</code> y <code>#define</code> antes de la compilación.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C — estructura mínima</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>   <span class="cmt">/* librería estándar de E/S */</span>
+<span class="pp">#include</span> <span class="str">&lt;stdlib.h&gt;</span>  <span class="cmt">/* malloc, free, exit…     */</span>
+
+<span class="cmt">/* Declaración de función (prototipo) */</span>
+<span class="ty">void</span> <span class="fn">saludar</span>(<span class="ty">void</span>);
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="ty">int</span> argc, <span class="ty">char</span> *argv[]) {
+    <span class="fn">saludar</span>();
+    <span class="kw">return</span> <span class="num">0</span>;          <span class="cmt">/* 0 indica éxito al SO */</span>
+}
+
+<span class="ty">void</span> <span class="fn">saludar</span>(<span class="ty">void</span>) {
+    <span class="fn">printf</span>(<span class="str">"Hola, mundo!\n"</span>);
+}</pre>
+    </div>
+
+    <h3>Tipos de ficheros</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">.c — Fuente</div>
+        <p class="card-desc">Implementación: contiene las definiciones de funciones y variables globales.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">.h — Cabecera</div>
+        <p class="card-desc">Interfaz pública: prototipos, macros, tipos y declaraciones <code>extern</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">.o — Objeto</div>
+        <p class="card-desc">Código máquina de un <code>.c</code> compilado, sin enlazar todavía.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">a.out / bin — Ejecutable</div>
+        <p class="card-desc">Resultado del enlazado de uno o varios ficheros objeto.</p>
+      </div>
+    </div>
+
+    <h3>Compilación básica con GCC</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">bash — comandos de compilación</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="cmt"># Compilar directo a ejecutable</span>
+gcc main.c -o programa
+
+<span class="cmt"># Activar advertencias (recomendado)</span>
+gcc -Wall -Wextra -std=c99 main.c -o programa
+
+<span class="cmt"># Compilación en 2 pasos: .c → .o → ejecutable</span>
+gcc -c main.c -o main.o       <span class="cmt"># genera objeto</span>
+gcc main.o -o programa         <span class="cmt"># enlaza</span>
+
+<span class="cmt"># Multifuente</span>
+gcc -c main.c utils.c
+gcc main.o utils.o -o programa</pre>
+    </div>
+
+    <div class="callout">
+      <strong>💡 Buena práctica</strong>
+      Usa siempre <code>-Wall -Wextra</code>. GCC te avisará de variables no usadas, comparaciones peligrosas y muchos errores comunes antes de que sean bugs en producción.
+    </div>
+  </section>
+
+  <!-- ─── 2. VARIABLES Y TIPOS ─── -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2><small>Datos</small>Variables y tipos</h2>
+    </div>
+
+    <h3>Declaración e inicialización</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C — declaración</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="cmt">/* Declaración sin inicializar (valor indeterminado) */</span>
+<span class="ty">int</span> x;
+
+<span class="cmt">/* Declaración con inicialización */</span>
+<span class="ty">int</span>    edad     <span class="op">=</span> <span class="num">25</span>;
+<span class="ty">float</span>  precio   <span class="op">=</span> <span class="num">9.99f</span>;
+<span class="ty">double</span> pi       <span class="op">=</span> <span class="num">3.14159265</span>;
+<span class="ty">char</span>   letra    <span class="op">=</span> <span class="str">'A'</span>;
+<span class="ty">char</span>  *nombre   <span class="op">=</span> <span class="str">"Carlos"</span>;
+
+<span class="cmt">/* Constantes (no modificables) */</span>
+<span class="kw">const</span> <span class="ty">int</span> MAX <span class="op">=</span> <span class="num">100</span>;
+<span class="pp">#define</span> PI <span class="num">3.14159f</span>
+
+<span class="cmt">/* Variable global con extern (declaración, no definición) */</span>
+<span class="kw">extern</span> <span class="ty">int</span> contador;  <span class="cmt">/* definida en otro .c */</span></pre>
+    </div>
+
+    <h3>Tipos primitivos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Tamaño típico</th><th>Rango / Uso</th><th>Formato printf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>char</td><td>1 byte</td><td>−128 … 127 / caracteres</td><td><code>%c</code> / <code>%d</code></td></tr>
+          <tr><td>unsigned char</td><td>1 byte</td><td>0 … 255</td><td><code>%u</code></td></tr>
+          <tr><td>short</td><td>2 bytes</td><td>−32 768 … 32 767</td><td><code>%hd</code></td></tr>
+          <tr><td>int</td><td>4 bytes</td><td>−2 147 483 648 … 2 147 483 647</td><td><code>%d</code></td></tr>
+          <tr><td>long</td><td>4–8 bytes</td><td>depende de plataforma</td><td><code>%ld</code></td></tr>
+          <tr><td>long long</td><td>8 bytes</td><td>±9.2 × 10¹⁸</td><td><code>%lld</code></td></tr>
+          <tr><td>float</td><td>4 bytes</td><td>~7 dígitos significativos</td><td><code>%f</code></td></tr>
+          <tr><td>double</td><td>8 bytes</td><td>~15 dígitos significativos</td><td><code>%lf</code></td></tr>
+          <tr><td>_Bool / bool</td><td>1 byte</td><td>0 (falso) o 1 (verdadero)</td><td><code>%d</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Extern</h3>
+    <p><code>extern</code> declara que una variable existe y está definida en otro fichero fuente. Es la forma de compartir variables globales entre varios <code>.c</code>.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C — extern</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="cmt">/* config.c — DEFINICIÓN (asigna espacio) */</span>
+<span class="ty">int</span> modo_debug <span class="op">=</span> <span class="num">0</span>;
+
+<span class="cmt">/* utils.c — DECLARACIÓN (solo avisa al compilador) */</span>
+<span class="kw">extern</span> <span class="ty">int</span> modo_debug;   <span class="cmt">/* sin reservar memoria */</span>
+
+<span class="ty">void</span> <span class="fn">log</span>(<span class="kw">const</span> <span class="ty">char</span> *msg) {
+    <span class="kw">if</span> (modo_debug) <span class="fn">fprintf</span>(stderr, <span class="str">"[DBG] %s\n"</span>, msg);
+}</pre>
+    </div>
+  </section>
+
+  <!-- ─── 3. OPERADORES ─── -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2><small>Expresiones</small>Operadores</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Categoría</th><th>Operadores</th><th>Ejemplo</th><th>Resultado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Aritméticos</td><td><code>+ - * / %</code></td><td><code>10 % 3</code></td><td><code>1</code></td></tr>
+          <tr><td>Comparación</td><td><code>== != &lt; &gt; &lt;= &gt;=</code></td><td><code>5 != 3</code></td><td><code>1 (true)</code></td></tr>
+          <tr><td>Lógicos</td><td><code>! &amp;&amp; ||</code></td><td><code>!0 &amp;&amp; 1</code></td><td><code>1 (true)</code></td></tr>
+          <tr><td>Asignación</td><td><code>= += -= *= /= %=</code></td><td><code>x += 5</code></td><td><code>x = x + 5</code></td></tr>
+          <tr><td>Incremento</td><td><code>++ --</code></td><td><code>i++</code></td><td>post-incremento</td></tr>
+          <tr><td>Bit a bit</td><td><code>&amp; | ^ ~ &lt;&lt; &gt;&gt;</code></td><td><code>1 &lt;&lt; 3</code></td><td><code>8</code></td></tr>
+          <tr><td>Ternario</td><td><code>? :</code></td><td><code>x&gt;0 ? x : -x</code></td><td>valor absoluto</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C — ejemplos de operadores</span>
+        <div class="code-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="ty">int</span> a <span class="op">=</span> <span class="num">7</span>, b <span class="op">=</span> <span class="num">2</span>, c;
+
+c <span class="op">=</span> a <span class="op">/</span> b;            <span class="cmt">/* 3   (división entera) */</span>
+c <span class="op">=</span> a <span class="op">%</span> b;            <span class="cmt">/* 1   (resto) */</span>
+c <span class="op">=</span> (a <span class="op">&gt;</span> b) <span class="op">&amp;&amp;</span> (b <span class="op">&gt;</span> <span class="num">0</span>); <span class="cmt">/* 1   (ambas condiciones ciertas) */</span>
+c <span class="op">=</span> <span class="op">!</span>(a <span class="op">==</span> b);        <span class="cmt">/* 1   (a != b) */</span>
+c <span class="op">=</span> a <span class="op">||</span> <span class="num">0</span>;           <span class="cmt">/* 1   (a es distinto de 0) */</span>
+
+<span class="cmt">/* Cortocircuito: si el 1er operando define el resultado, el 2º no se evalúa */</span>
+<span class="ty">int</span> *p <span class="op">=</span> NULL;
+<span class="kw">if</span> (p <span class="op">!=</span> NULL <span class="op">&amp;&amp;</span> <span class="op">*</span>p <span class="op">&gt;</span> <span class="num">0</span>) { ... }  <span class="cmt">/* seguro: *p no se desreferencia si p==NULL */</span></pre>
+    </div>
+  </section>
+
+  <!-- ─── 4. CONTROL DE FLUJO ─── -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2><small>Lógica</small>Estructuras de control</h2>
+    </div>
+
+    <h3>if — else</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span> nota <span class="op">=</span> <span class="num">75</span>;
+
+<span class="kw">if</span> (nota <span class="op">&gt;=</span> <span class="num">90</span>) {
+    <span class="fn">printf</span>(<span class="str">"Sobresaliente\n"</span>);
+} <span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">70</span>) {
+    <span class="fn">printf</span>(<span class="str">"Notable\n"</span>);
+} <span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">50</span>) {
+    <span class="fn">printf</span>(<span class="str">"Aprobado\n"</span>);
+} <span class="kw">else</span> {
+    <span class="fn">printf</span>(<span class="str">"Suspenso\n"</span>);
+}</pre>
+    </div>
+
+    <h3>switch</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span> dia <span class="op">=</span> <span class="num">3</span>;
+
+<span class="kw">switch</span> (dia) {
+    <span class="kw">case</span> <span class="num">1</span>:  <span class="fn">printf</span>(<span class="str">"Lunes\n"</span>);     <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">2</span>:  <span class="fn">printf</span>(<span class="str">"Martes\n"</span>);    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">3</span>:  <span class="fn">printf</span>(<span class="str">"Miércoles\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:
+    <span class="kw">case</span> <span class="num">7</span>:  <span class="fn">printf</span>(<span class="str">"Fin de semana\n"</span>); <span class="kw">break</span>;
+    <span class="kw">default</span>: <span class="fn">printf</span>(<span class="str">"Otro día\n"</span>);
+}
+<span class="cmt">/* ⚠ Sin break, la ejecución cae al siguiente case (fall-through) */</span></pre>
+    </div>
+
+    <h3>for / while / do-while</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — bucles</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt">/* for: cuando se conoce el número de iteraciones */</span>
+<span class="kw">for</span> (<span class="ty">int</span> i <span class="op">=</span> <span class="num">0</span>; i <span class="op">&lt;</span> <span class="num">5</span>; i<span class="op">++</span>) {
+    <span class="fn">printf</span>(<span class="str">"%d "</span>, i);   <span class="cmt">/* 0 1 2 3 4 */</span>
+}
+
+<span class="cmt">/* while: condición evaluada ANTES de cada iteración */</span>
+<span class="ty">int</span> n <span class="op">=</span> <span class="num">10</span>;
+<span class="kw">while</span> (n <span class="op">&gt;</span> <span class="num">0</span>) {
+    n <span class="op">-=</span> <span class="num">3</span>;
+}  <span class="cmt">/* n termina en -2 */</span>
+
+<span class="cmt">/* do-while: se ejecuta AL MENOS una vez */</span>
+<span class="ty">int</span> opcion;
+<span class="kw">do</span> {
+    <span class="fn">printf</span>(<span class="str">"Elige 1–3: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="op">&amp;</span>opcion);
+} <span class="kw">while</span> (opcion <span class="op">&lt;</span> <span class="num">1</span> <span class="op">||</span> opcion <span class="op">&gt;</span> <span class="num">3</span>);
+
+<span class="cmt">/* break y continue */</span>
+<span class="kw">for</span> (<span class="ty">int</span> i <span class="op">=</span> <span class="num">0</span>; i <span class="op">&lt;</span> <span class="num">10</span>; i<span class="op">++</span>) {
+    <span class="kw">if</span> (i <span class="op">==</span> <span class="num">5</span>) <span class="kw">break</span>;     <span class="cmt">/* sale del bucle al llegar a 5 */</span>
+    <span class="kw">if</span> (i <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>) <span class="kw">continue</span>; <span class="cmt">/* salta pares, sigue iterando */</span>
+    <span class="fn">printf</span>(<span class="str">"%d "</span>, i);   <span class="cmt">/* imprime: 1 3 */</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- ─── 5. E/S ─── -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2><small>I/O</small>Entrada y salida de datos</h2>
+    </div>
+
+    <h3>Canales estándar</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">stdin</div>
+        <p class="card-desc">Entrada estándar. Por defecto el teclado. Descriptor 0.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">stdout</div>
+        <p class="card-desc">Salida estándar. Por defecto la pantalla. Descriptor 1.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">stderr</div>
+        <p class="card-desc">Salida de errores. Pantalla, sin buffering. Descriptor 2.</p>
+      </div>
+    </div>
+
+    <h3>Apertura y cierre de ficheros</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="ty">FILE</span> *fp <span class="op">=</span> <span class="fn">fopen</span>(<span class="str">"datos.txt"</span>, <span class="str">"r"</span>);  <span class="cmt">/* abre en lectura */</span>
+<span class="kw">if</span> (fp <span class="op">==</span> NULL) {
+    <span class="fn">perror</span>(<span class="str">"Error al abrir"</span>);
+    <span class="kw">return</span> <span class="num">1</span>;
+}
+<span class="cmt">/* ... usar fp ... */</span>
+<span class="fn">fclose</span>(fp);   <span class="cmt">/* siempre cerrar */</span></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Modo</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td>"r"</td><td>Lectura. El fichero debe existir.</td></tr>
+          <tr><td>"w"</td><td>Escritura. Crea o trunca.</td></tr>
+          <tr><td>"a"</td><td>Añadir al final (append).</td></tr>
+          <tr><td>"r+"</td><td>Lectura y escritura.</td></tr>
+          <tr><td>"rb"</td><td>Lectura binaria.</td></tr>
+          <tr><td>"wb"</td><td>Escritura binaria.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>E/S con formato</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — printf / scanf</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span> edad; <span class="ty">float</span> altura;
+
+<span class="fn">printf</span>(<span class="str">"Introduce edad y altura: "</span>);
+<span class="fn">scanf</span>(<span class="str">"%d %f"</span>, <span class="op">&amp;</span>edad, <span class="op">&amp;</span>altura);  <span class="cmt">/* & para pasar dirección */</span>
+<span class="fn">printf</span>(<span class="str">"Edad: %d, Altura: %.2f m\n"</span>, edad, altura);
+
+<span class="cmt">/* Hacia/desde fichero */</span>
+<span class="fn">fprintf</span>(fp, <span class="str">"Usuario: %s, Nota: %d\n"</span>, nombre, nota);
+<span class="fn">fscanf</span>(fp, <span class="str">"%s %d"</span>, nombre, <span class="op">&amp;</span>nota);
+
+<span class="cmt">/* stderr para errores */</span>
+<span class="fn">fprintf</span>(stderr, <span class="str">"Error: valor inválido %d\n"</span>, val);</pre>
+    </div>
+
+    <h3>E/S sin formato</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">char</span> buf[<span class="num">256</span>];
+
+<span class="cmt">/* Caracteres individuales */</span>
+<span class="ty">int</span> c <span class="op">=</span> <span class="fn">getc</span>(fp);       <span class="cmt">/* lee un char de fp */</span>
+<span class="fn">putc</span>(<span class="str">'A'</span>, fp);          <span class="cmt">/* escribe un char en fp */</span>
+
+<span class="cmt">/* Líneas completas */</span>
+<span class="fn">fgets</span>(buf, <span class="kw">sizeof</span>(buf), stdin);  <span class="cmt">/* seguro: limita buffer */</span>
+<span class="fn">fputs</span>(buf, fp);
+
+<span class="cmt">/* Solo stdout/stdin */</span>
+<span class="fn">puts</span>(<span class="str">"Hola"</span>);            <span class="cmt">/* = printf("Hola\n") */</span>
+<span class="fn">gets</span>(buf);              <span class="cmt">/* ⚠ INSEGURO: no usar, sin límite */</span></pre>
+    </div>
+
+    <h3>E/S binaria por bloques</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — fread / fwrite</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">typedef struct</span> {
+    <span class="ty">char</span> nombre[<span class="num">50</span>];
+    <span class="ty">int</span>  edad;
+} Persona;
+
+Persona p <span class="op">=</span> { <span class="str">"Ana"</span>, <span class="num">30</span> };
+<span class="ty">FILE</span> *fp <span class="op">=</span> <span class="fn">fopen</span>(<span class="str">"personas.bin"</span>, <span class="str">"wb"</span>);
+
+<span class="cmt">/* Escribe 1 elemento de tamaño sizeof(Persona) */</span>
+<span class="fn">fwrite</span>(<span class="op">&amp;</span>p, <span class="kw">sizeof</span>(Persona), <span class="num">1</span>, fp);
+<span class="fn">fclose</span>(fp);
+
+<span class="cmt">/* Lectura */</span>
+fp <span class="op">=</span> <span class="fn">fopen</span>(<span class="str">"personas.bin"</span>, <span class="str">"rb"</span>);
+Persona leida;
+<span class="fn">fread</span>(<span class="op">&amp;</span>leida, <span class="kw">sizeof</span>(Persona), <span class="num">1</span>, fp);
+<span class="fn">fclose</span>(fp);</pre>
+    </div>
+  </section>
+
+  <!-- ─── 6. PUNTEROS ─── -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2><small>Memoria</small>Punteros</h2>
+    </div>
+
+    <p>Un puntero almacena la <strong>dirección de memoria</strong> de otra variable. Son la base de la gestión dinámica, los arrays y el paso por referencia en C.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — operadores * y &amp;</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span>  valor <span class="op">=</span> <span class="num">42</span>;
+<span class="ty">int</span> *ptr;          <span class="cmt">/* declara puntero a int */</span>
+
+ptr <span class="op">=</span> <span class="op">&amp;</span>valor;       <span class="cmt">/* & → "dirección de" (0x7fff...) */</span>
+
+<span class="fn">printf</span>(<span class="str">"%p\n"</span>, ptr);     <span class="cmt">/* dirección: 0x7fff... */</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="op">*</span>ptr);   <span class="cmt">/* * → "valor en esa dir": 42 */</span>
+
+<span class="op">*</span>ptr <span class="op">=</span> <span class="num">100</span>;             <span class="cmt">/* modifica valor a través del puntero */</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, valor);  <span class="cmt">/* imprime: 100 */</span>
+
+<span class="cmt">/* Puntero nulo — inicializar siempre si no se usa */</span>
+<span class="ty">int</span> *nulo <span class="op">=</span> NULL;       <span class="cmt">/* nunca desreferenciar NULL */</span></pre>
+    </div>
+
+    <h3>Aritmética de punteros</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span> arr[] <span class="op">=</span> { <span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span> };
+<span class="ty">int</span> *p <span class="op">=</span> arr;       <span class="cmt">/* apunta al primer elemento */</span>
+
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="op">*</span>p);         <span class="cmt">/* 10 */</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="op">*</span>(p<span class="op">+1</span>));     <span class="cmt">/* 20 — avanza sizeof(int) bytes */</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="op">*</span>(p<span class="op">+2</span>));     <span class="cmt">/* 30 */</span>
+
+p<span class="op">++</span>;                       <span class="cmt">/* p ahora apunta a arr[1] */</span>
+
+<span class="cmt">/* Diferencia entre punteros (número de elementos) */</span>
+<span class="ty">int</span> *fin <span class="op">=</span> arr <span class="op">+</span> <span class="num">4</span>;
+<span class="fn">printf</span>(<span class="str">"%td\n"</span>, fin <span class="op">-</span> arr);  <span class="cmt">/* 4 (tipo ptrdiff_t) */</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Atención</strong>
+      Sumar 1 a un <code>int*</code> avanza <strong>4 bytes</strong> (tamaño de int), no 1 byte. La aritmética de punteros está indexada por el tamaño del tipo apuntado.
+    </div>
+  </section>
+
+  <!-- ─── 7. FUNCIONES ─── -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2><small>Modularidad</small>Funciones</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — sintaxis básica</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt">/* Prototipo (en .h o antes de main) */</span>
+<span class="ty">int</span> <span class="fn">suma</span>(<span class="ty">int</span> a, <span class="ty">int</span> b);
+
+<span class="cmt">/* Definición */</span>
+<span class="ty">int</span> <span class="fn">suma</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) {
+    <span class="kw">return</span> a <span class="op">+</span> b;
+}
+
+<span class="cmt">/* Sin retorno */</span>
+<span class="ty">void</span> <span class="fn">imprimir</span>(<span class="kw">const</span> <span class="ty">char</span> *msg) {
+    <span class="fn">printf</span>(<span class="str">"%s\n"</span>, msg);
+}</pre>
+    </div>
+
+    <h3>Paso por valor vs. referencia</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — paso de parámetros</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt">/* Por VALOR: se copia el argumento, el original NO cambia */</span>
+<span class="ty">void</span> <span class="fn">doble_valor</span>(<span class="ty">int</span> x) {
+    x <span class="op">*=</span> <span class="num">2</span>;   <span class="cmt">/* solo modifica la copia local */</span>
+}
+
+<span class="cmt">/* Por REFERENCIA (pasando puntero): modifica el original */</span>
+<span class="ty">void</span> <span class="fn">doble_ref</span>(<span class="ty">int</span> *x) {
+    <span class="op">*</span>x <span class="op">*=</span> <span class="num">2</span>;  <span class="cmt">/* modifica el valor en la dirección apuntada */</span>
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> n <span class="op">=</span> <span class="num">5</span>;
+    <span class="fn">doble_valor</span>(n);        <span class="cmt">/* n sigue siendo 5 */</span>
+    <span class="fn">doble_ref</span>(<span class="op">&amp;</span>n);         <span class="cmt">/* n ahora es 10 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <h3>Compilación multifuente</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt"># Paso 1: compilar cada .c a .o</span>
+gcc -c main.c   -o main.o
+gcc -c utils.c  -o utils.o
+gcc -c config.c -o config.o
+
+<span class="cmt"># Paso 2: enlazar todos los .o</span>
+gcc main.o utils.o config.o -o mi_programa
+
+<span class="cmt"># Makefile mínimo</span>
+<span class="cmt"># all: main.o utils.o</span>
+<span class="cmt">#     gcc $^ -o programa</span></pre>
+    </div>
+  </section>
+
+  <!-- ─── 8. ARRAYS ─── -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2><small>Colecciones</small>Arrays</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — declaración e inicialización</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="ty">int</span>  nums[<span class="num">5</span>]           <span class="op">=</span> { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> };
+<span class="ty">float</span> mat[<span class="num">3</span>][<span class="num">3</span>]         <span class="op">=</span> { {<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>}, {<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>}, {<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>} };  <span class="cmt">/* 2D */</span>
+<span class="ty">char</span> nombre[]          <span class="op">=</span> <span class="str">"Mundo"</span>;           <span class="cmt">/* [6] con \0 */</span>
+
+<span class="cmt">/* Arrays y punteros — equivalencias */</span>
+<span class="ty">int</span> *p <span class="op">=</span> nums;
+nums[<span class="num">2</span>]  <span class="op">==</span> <span class="op">*</span>(nums <span class="op">+</span> <span class="num">2</span>)  <span class="op">==</span> p[<span class="num">2</span>]  <span class="op">==</span> <span class="op">*</span>(p<span class="op">+</span><span class="num">2</span>)   <span class="cmt">/* todos = 3 */</span></pre>
+    </div>
+
+    <h3>Funciones de string (string.h)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Función</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td>strlen(s)</td><td>Longitud de la cadena (sin <code>\0</code>)</td></tr>
+          <tr><td>strcpy(dst, src)</td><td>Copia <code>src</code> en <code>dst</code></td></tr>
+          <tr><td>strncpy(dst, src, n)</td><td>Copia hasta <code>n</code> caracteres (más seguro)</td></tr>
+          <tr><td>strcat(dst, src)</td><td>Concatena <code>src</code> al final de <code>dst</code></td></tr>
+          <tr><td>strcmp(a, b)</td><td>Compara: 0 si iguales, &lt;0 o &gt;0 si no</td></tr>
+          <tr><td>sprintf(buf, fmt, …)</td><td>Escribe formato a una cadena</td></tr>
+          <tr><td>atoi(s)</td><td>Convierte string a <code>int</code></td></tr>
+          <tr><td>atof(s)</td><td>Convierte string a <code>double</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — strings</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="ty">char</span> s1[<span class="num">20</span>] <span class="op">=</span> <span class="str">"Hola"</span>;
+<span class="ty">char</span> s2[]   <span class="op">=</span> <span class="str">" Mundo"</span>;
+
+<span class="fn">strcat</span>(s1, s2);                   <span class="cmt">/* s1 = "Hola Mundo" */</span>
+<span class="fn">printf</span>(<span class="str">"%zu\n"</span>, <span class="fn">strlen</span>(s1));     <span class="cmt">/* 10 */</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>,  <span class="fn">strcmp</span>(s1, s2)); <span class="cmt">/* &gt;0 (H > espacio) */</span>
+
+<span class="ty">char</span> buf[<span class="num">50</span>];
+<span class="fn">sprintf</span>(buf, <span class="str">"Resultado: %d"</span>, <span class="num">42</span>);  <span class="cmt">/* buf = "Resultado: 42" */</span></pre>
+    </div>
+
+    <h3>Argumentos de programa</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — argc / argv</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt">/* ./programa hola 42 */</span>
+<span class="ty">int</span> <span class="fn">main</span>(<span class="ty">int</span> argc, <span class="ty">char</span> *argv[]) {
+    <span class="fn">printf</span>(<span class="str">"Argumentos: %d\n"</span>, argc);    <span class="cmt">/* 3 */</span>
+    <span class="fn">printf</span>(<span class="str">"Programa:   %s\n"</span>, argv[<span class="num">0</span>]); <span class="cmt">/* "./programa" */</span>
+    <span class="fn">printf</span>(<span class="str">"Arg1:       %s\n"</span>, argv[<span class="num">1</span>]); <span class="cmt">/* "hola" */</span>
+
+    <span class="ty">int</span> num <span class="op">=</span> <span class="fn">atoi</span>(argv[<span class="num">2</span>]);              <span class="cmt">/* 42 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+  </section>
+
+  <!-- ─── 9. ESTRUCTURAS ─── -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2><small>Datos compuestos</small>Estructuras</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — struct y typedef</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cmt">/* Definición */</span>
+<span class="kw">struct</span> Punto {
+    <span class="ty">double</span> x;
+    <span class="ty">double</span> y;
+};
+
+<span class="cmt">/* Con typedef: evita escribir "struct" cada vez */</span>
+<span class="kw">typedef struct</span> {
+    <span class="ty">char</span>  nombre[50];
+    <span class="ty">int</span>   edad;
+    <span class="ty">float</span> nota;
+} Alumno;
+
+<span class="cmt">/* Uso */</span>
+Alumno a1;
+a1.edad <span class="op">=</span> <span class="num">20</span>;
+<span class="fn">strcpy</span>(a1.nombre, <span class="str">"Luis"</span>);
+
+<span class="cmt">/* Inicialización directa */</span>
+Alumno a2 <span class="op">=</span> { <span class="str">"María"</span>, <span class="num">22</span>, <span class="num">9.5f</span> };
+
+<span class="cmt">/* Array de structs */</span>
+Alumno clase[<span class="num">30</span>];
+clase[<span class="num">0</span>].nota <span class="op">=</span> <span class="num">8.0f</span>;</pre>
+    </div>
+
+    <h3>Punteros a structs</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — operador -></span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre>Alumno  a   <span class="op">=</span> { <span class="str">"Pedro"</span>, <span class="num">21</span>, <span class="num">7.5f</span> };
+Alumno *ptr <span class="op">=</span> <span class="op">&amp;</span>a;
+
+<span class="cmt">/* Acceso con puntero: dos formas equivalentes */</span>
+(*ptr).edad  <span class="op">=</span> <span class="num">22</span>;   <span class="cmt">/* forma larga */</span>
+ptr->edad    <span class="op">=</span> <span class="num">22</span>;   <span class="cmt">/* forma corta con -> */</span>
+
+<span class="fn">printf</span>(<span class="str">"%s tiene %d años\n"</span>, ptr->nombre, ptr->edad);
+
+<span class="cmt">/* Función que modifica un struct */</span>
+<span class="ty">void</span> <span class="fn">subir_nota</span>(Alumno *a, <span class="ty">float</span> inc) {
+    a->nota <span class="op">+=</span> inc;
+}
+<span class="fn">subir_nota</span>(<span class="op">&amp;</span>a, <span class="num">0.5f</span>);</pre>
+    </div>
+
+    <h3>Structs anidadas</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">typedef struct</span> {
+    <span class="ty">char</span> calle[80];
+    <span class="ty">int</span>  numero;
+} Direccion;
+
+<span class="kw">typedef struct</span> {
+    <span class="ty">char</span>      nombre[50];
+    Direccion domicilio;   <span class="cmt">/* struct anidada */</span>
+} Persona;
+
+Persona p;
+<span class="fn">strcpy</span>(p.domicilio.calle, <span class="str">"Calle Mayor"</span>);
+p.domicilio.numero <span class="op">=</span> <span class="num">10</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ─── 10. MEMORIA DINÁMICA ─── -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2><small>Heap</small>Memoria dinámica</h2>
+    </div>
+
+    <p>La memoria dinámica se gestiona manualmente en el <strong>heap</strong>. A diferencia de las variables locales (stack), persiste hasta que se libera con <code>free()</code>.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Función</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td>malloc(size)</td><td>Reserva <code>size</code> bytes. Contenido indeterminado.</td></tr>
+          <tr><td>calloc(n, size)</td><td>Reserva <code>n × size</code> bytes, inicializados a 0.</td></tr>
+          <tr><td>realloc(ptr, size)</td><td>Redimensiona un bloque existente.</td></tr>
+          <tr><td>free(ptr)</td><td>Libera la memoria reservada. Esencial para evitar leaks.</td></tr>
+          <tr><td>sizeof(tipo)</td><td>Tamaño en bytes de un tipo en tiempo de compilación.</td></tr>
+          <tr><td>strdup(s)</td><td>Copia una cadena al heap (malloc + strcpy). Liberar con free.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — malloc / calloc / realloc / free</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="pp">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="cmt">/* malloc: reservar array dinámico */</span>
+<span class="ty">int</span> n <span class="op">=</span> <span class="num">10</span>;
+<span class="ty">int</span> *arr <span class="op">=</span> (<span class="ty">int</span> <span class="op">*</span>) <span class="fn">malloc</span>(n <span class="op">*</span> <span class="kw">sizeof</span>(<span class="ty">int</span>));
+<span class="kw">if</span> (!arr) { <span class="fn">perror</span>(<span class="str">"malloc"</span>); <span class="kw">return</span> <span class="num">1</span>; }
+
+<span class="cmt">/* calloc: ya inicializado a 0 */</span>
+<span class="ty">int</span> *zeros <span class="op">=</span> (<span class="ty">int</span> <span class="op">*</span>) <span class="fn">calloc</span>(n, <span class="kw">sizeof</span>(<span class="ty">int</span>));
+
+<span class="cmt">/* realloc: ampliar a 20 elementos */</span>
+arr <span class="op">=</span> (<span class="ty">int</span> <span class="op">*</span>) <span class="fn">realloc</span>(arr, <span class="num">20</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="ty">int</span>));
+<span class="kw">if</span> (!arr) { <span class="fn">perror</span>(<span class="str">"realloc"</span>); <span class="kw">return</span> <span class="num">1</span>; }
+
+<span class="cmt">/* strdup */</span>
+<span class="ty">char</span> *copia <span class="op">=</span> <span class="fn">strdup</span>(<span class="str">"texto original"</span>);
+
+<span class="cmt">/* SIEMPRE liberar */</span>
+<span class="fn">free</span>(arr);
+<span class="fn">free</span>(zeros);
+<span class="fn">free</span>(copia);
+arr <span class="op">=</span> NULL;    <span class="cmt">/* evitar puntero colgante */</span></pre>
+    </div>
+
+    <h3>Operaciones sobre bloques de memoria</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C — memcpy / memset / memcmp</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="ty">int</span> src[<span class="num">5</span>] <span class="op">=</span> { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> };
+<span class="ty">int</span> dst[<span class="num">5</span>];
+
+<span class="cmt">/* memcpy: copia n bytes de src a dst (no solapados) */</span>
+<span class="fn">memcpy</span>(dst, src, <span class="num">5</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="ty">int</span>));
+
+<span class="cmt">/* memset: rellena n bytes con un valor (útil para poner a 0) */</span>
+<span class="fn">memset</span>(dst, <span class="num">0</span>, <span class="num">5</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="ty">int</span>));   <span class="cmt">/* dst = {0,0,0,0,0} */</span>
+
+<span class="cmt">/* memcmp: compara n bytes; 0 si iguales */</span>
+<span class="ty">int</span> igual <span class="op">=</span> (<span class="fn">memcmp</span>(src, dst, <span class="num">5</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="ty">int</span>)) <span class="op">==</span> <span class="num">0</span>);
+<span class="cmt">/* igual = 0 (son distintos tras el memset) */</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Memory leaks</strong>
+      Cada <code>malloc</code>/<code>calloc</code>/<code>strdup</code> debe tener su <code>free</code> correspondiente. Herramientas como <strong>Valgrind</strong> o <strong>AddressSanitizer</strong> (<code>-fsanitize=address</code>) detectan fugas de memoria automáticamente.
+    </div>
+
+    <div class="callout info">
+      <strong>💡 Patrón seguro</strong>
+      Después de un <code>free(ptr)</code>, asigna siempre <code>ptr = NULL</code> para evitar que sea un puntero colgante (dangling pointer) que podría desreferenciarse accidentalmente.
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const el = document.documentElement;
+    const pct = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  });
+
+  // Active nav item
+  const sections = document.querySelectorAll('.section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const link = document.querySelector('.nav-item[href="#' + e.target.id + '"]');
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

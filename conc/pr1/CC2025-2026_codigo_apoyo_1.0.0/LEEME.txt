@@ -1,0 +1,22 @@
+- Para poder compilar y ejecutar tu código necesitarás adaptarlo a tu
+  IDE favorito.
+
+- Si lo haces desde la línea de comandos bastará con compilar:
+  javac -d . -cp .:cclib-0.4.9.jar:jcsp.jar *.java
+
+- Y ejecutar:
+  java -cp .:cclib-0.4.9.jar:jcsp.jar cc.mercado.MercadoSim
+
+- No olvides cambiar en MercadoSim.java la creación del recurso
+  compartido en la línea 24 de acuerdo a la práctica que quieras
+  simular
+
+  -      mercado = new MercadoMonitor();
+  +      mercado = new MercadoCSP();
+
+- Y por supuesto no olvides recompilar todo antes de volver a ejecutar:
+  javac -d . -cp .:cclib-0.4.9.jar:jcsp.jar *.java
+
+- Se irán publicando actualizaciones al código de apoyo con mejoras en
+  el simulador, correcciones de posibles errores y plantillas de
+  código.

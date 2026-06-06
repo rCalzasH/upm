@@ -1,0 +1,22 @@
+* Version number criteria
+
+  We use the version numbering criteria with a major and a minor
+  number revision, following:
+
+  - "The major version of your library starts at zero and is
+    incremented if the library breaks backwards compatibility."
+  - "The minor version of your library also starts at zero. Every time
+    you add to the libraries interface but maintain backwards
+    compatibility, this is incremented. If you bump the major version,
+    it is reset to zero."
+  - The minor number is a composition of two numbers, the first one
+    indicates the stability of the code (even = stable, odd =
+    unstable).
+
+* Version number change
+
+  To change the version number you have to edit entry
+
+  <property name="version.num" value="0.4.3" />
+ 
+  in file build.xml of the netbeans project.
