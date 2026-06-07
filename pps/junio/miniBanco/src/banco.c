@@ -159,15 +159,20 @@ void imprimir_banco(FILE *f,Banco *b ){
   fputs(cuenta_texto(b->cuentas[i]), *f);
   i++;
   }
+}void muestra_banco(Banco *b){
+    int i=0;
+    char bank[4096];
+    char *texto;
+    bank[0] = '\0';
+    while(b->cuentas[i]!=NULL){
+        texto = cuenta_texto(b->cuentas[i]);
+        if(texto != NULL){
+            strncat(bank, texto, sizeof(bank) - strlen(bank) - 1);
+            free(texto);
+        }
+        i++;
+    }
+    strncat(bank, b->direccionSu, sizeof(bank) - strlen(bank) - 1);
+    printf("%s", bank); 
 }
 
-void muestra_banco(Banco *b){
-  int i=0;
-  char *bank;
-  while(b->cuentas[i]!=NULL){
-    bank+=cuenta_texto(b->cuentas[i]);
-    i++;
-  }
-  bank+=b->direccionSu;
-  printf(bank);
-}

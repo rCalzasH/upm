@@ -40,7 +40,7 @@ static int iban_valido(char n[25]){
 }
 /*incicializacion de una cuenta */
 Cuenta *cear_cuenta(char *t, char n[25], double s){
-    Cuenta *c = calloc(1,sizeof(Cuenta*));
+    Cuenta *c = calloc(1,sizeof(Cuenta));
     if(t==NULL || !iban_valido(n)){
         printf(MSG_NO_VAL_PARAM);
         return NULL;
@@ -51,8 +51,8 @@ Cuenta *cear_cuenta(char *t, char n[25], double s){
     return NULL;
     }
     /*comprobamos que se puede asignar la memoria dinamica*/
-    c->titular=calloc(1,sizeof(t));
-    if(c==NULL){
+    c->titular=calloc(1,strlen (t)+1);
+    if(c->titular==NULL){
     perror(MSG_MEM_DIN);
     free(c);
     return NULL;
