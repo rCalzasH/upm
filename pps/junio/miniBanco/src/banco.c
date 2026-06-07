@@ -28,11 +28,12 @@ static void reorganizar_cuentas(Banco *b, int i ){
 }
 /*inciializador de banco*/
 Banco *crear_Banco(char* s){
+    Banco *b; 
     if(s==NULL){
         printf(MSG_NO_VAL_PARAM);
         return NULL;
     }
-    Banco *b = calloc(1, sizeof(Banco));
+    b = calloc(1, sizeof(Banco));
     if(b==NULL){
         perror(MSG_MEM_DIN);
         return NULL;
@@ -119,7 +120,7 @@ int copiar_banco(Banco *b, Banco *v){
 /*TRUE(1) FALSE(0)*/
 int mismo_banco(Banco *b, Banco *v){
     int boolIg=1;
-    int i;  
+    int i=0;  
     if(b==NULL || v==NULL){
         printf(MSG_NO_VAL_PARAM);
         return -1;
@@ -134,29 +135,23 @@ int mismo_banco(Banco *b, Banco *v){
 
 }
 int esta_cuenta(Banco *b, Cuenta *c){
-  int boolEsta = 0;
   int i=0;
   /*necesito un tercer int para poder guaradar el indicie además del buleano de control*/
-  int inA=0;
   if(b==NULL || c==NULL){
     printf(MSG_NO_VAL_PARAM);
     return -1;
   }
    
-  while(b->cuentas[i]!=NULL && boolEsta==0){
-    if(misma_cuenta(b->cuentas[i]),c){
-      inA=i;
-      boolEsta==1;/*econtrado*/
-    } 
+  while(b->cuentas[i]!=NULL){
+    if(misma_cuenta(b->cuentas[i],c))return i;
   }
-    return inA;
+    return i;
 }/*devuele -1 si FALSE y >=0 si true */
 void imprimir_banco(FILE *f,Banco *b ){
   int i=0;
-  fopen(f,"w");
   /*comprobaciones en el main sobre si esta bien abierto o no sobre argv*/
   while(b->cuentas[i]!=NULL){  
-  fputs(cuenta_texto(b->cuentas[i]), *f);
+  fputs(cuenta_texto(b->cuentas[i]), f);
   i++;
   }
 }void muestra_banco(Banco *b){
