@@ -134,7 +134,40 @@ int mismo_banco(Banco *b, Banco *v){
 
 }
 int esta_cuenta(Banco *b, Cuenta *c){
-    
+  int boolEsta = 0;
+  int i=0;
+  /*necesito un tercer int para poder guaradar el indicie además del buleano de control*/
+  int inA=0;
+  if(b==NULL || c==NULL){
+    printf(MSG_NO_VAL_PARAM);
+    return -1;
+  }
+   
+  while(b->cuentas[i]!=NULL && boolEsta==0){
+    if(misma_cuenta(b->cuentas[i]),c){
+      inA=i;
+      boolEsta==1;/*econtrado*/
+    } 
+  }
+    return inA;
 }/*devuele -1 si FALSE y >=0 si true */
-char* imprimir_banco(FILE *f,Banco *b );/*DUUUUURO*/
-void muestra_banco(Banco *b);
+void imprimir_banco(FILE *f,Banco *b ){
+  int i=0;
+  fopen(f,"w");
+  /*comprobaciones en el main sobre si esta bien abierto o no sobre argv*/
+  while(b->cuentas[i]!=NULL){  
+  fputs(cuenta_texto(b->cuentas[i]), *f);
+  i++;
+  }
+}
+
+void muestra_banco(Banco *b){
+  int i=0;
+  char *bank;
+  while(b->cuentas[i]!=NULL){
+    bank+=cuenta_texto(b->cuentas[i]);
+    i++;
+  }
+  bank+=b->direccionSu;
+  printf(bank);
+}
