@@ -1,0 +1,44 @@
+#!/bin/bash
+
+bidirectional=0
+
+if [ "$1" = "-B" ]; then
+    bidirectional=1
+    # A partir de aquí $2 es $1 y $3 es $2 y $# es $#-1
+    shift
+fi
+
+if [ $# -ne 2 ]; then
+    echo "USO: gg [-B] NODOS ARCOS" >&2
+    exit 1
+fi
+
+NODOS=$1
+ARCOS=$2
+
+# La siguiente comprobación es para detectar que $NODOS y $ARCOS son
+# enteros. Dicha comprobación no se ha tenido en cuenta en la
+# corrección dado que no era fácil deducir cómo resolverlo.
+if ! [ "$NODOS" -eq "$NODOS" ] 2> /dev/null || ! [ "$ARCOS" -eq "$ARCOS" ] 2> /dev/null; then
+    echo "USO: gg [-B] NODOS ARCOS" >&2
+    exit 1
+fi
+
+# Comprobación de que los enteros no son negativos.
+if [ "$NODOS" -lt 0 ] || [ "$ARCOS" -lt 0 ]; then
+    echo "USO: gg [-B] NODOS ARCOS" >&2
+    exit 1
+fi
+
+# Si $NODOS es 0 no se pueden generar arcos ya que no hay nodos (por
+# sencillez no se ha considerado un error)
+if [ "$NODOS" -gt 0 ]; then
+    for i in $(seq 0 $((ARCOS - 1))); do
+        u=$(( RANDOM % NODOS ))
+        v=$(( RANDOM % NODOS ))
+        echo "$u $v"
+        if [ $bidirectional -eq 1 ]; then
+            echo "$v $u"
+        fi
+    done
+fi
