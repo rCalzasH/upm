@@ -9,8 +9,8 @@ INC    = includes
 BIN    = bin
 
 # Ficheros
-SRCS   = $(SRC)/main.c $(SRC)/agenda.c $(SRC)/contacto.c
-TARGET = $(BIN)/AgendaMuestra
+SRCS   = $(SRC)/main.c $(SRC)/cuenta.c $(SRC)/banco.c
+TARGET = $(BIN)/MiniBanco
 
 # Regla por defecto — compila todo de una vez
 all: $(TARGET)
@@ -23,3 +23,4 @@ clean:
 	rm -f $(TARGET)
 
 re: clean all
+

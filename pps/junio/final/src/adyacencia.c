@@ -80,5 +80,6 @@ void liberar(unsigned char ** A, size_t N){
     free(A[i]);
   }
   free(A);
+  return;
 } 
 
