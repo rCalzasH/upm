@@ -3,6 +3,7 @@
 */
 #ifndef ADYACENCIA_H
 #define ADYACENCIA_H
+#include "arcos.h"
 size_t num_nodos(arco_t * e, int size); 
 /*(1 Puntos) Calcula y retorna el número de nodos, N , en un grafo dado por el
 conjunto de arcos en el array e. Siendo size el número de arcos.
@@ -24,8 +25,10 @@ int es_bidireccional(unsigned char ** A, size_t N);
 /*
 (1 Puntos) Retorna 1 (verdadero) si se cumple que el grafo dado
 por la matriz de adyacencia A y número de nodos N, es bidireccional. Retorna 0 (falso) en caso contrario. Un grafo es bidireccional
-si se cumple que para cualquier arco u → v existe el arco v → u. Es decir, la matriz de adyacencia es simétrica.
-void liberar(unsigned char ** A, size_t N); (0.5 Punto) Libera la memoria dinámica reservada para una matriz de
+si se cumple que para cualquier arco u → v existe el arco v → u. Es decir, la matriz de adyacencia es simétrica.*/
+
+void liberar(unsigned char ** A, size_t N); 
+/*(0.5 Punto) Libera la memoria dinámica reservada para una matriz de
 adyacencia que se haya generado usando la función adyacencia. Donde A es la matriz dinámica y N el número de nodos.
 */
 /*terminamos la guarda de inclusion*/
