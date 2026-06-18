@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo Relacional — Bases de Datos</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3050;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --accent3: #34d399;
+    --warn: #f59e42;
+    --text: #e2e8f0;
+    --muted: #8892aa;
+    --code-bg: #141824;
+    --heading-font: 'Georgia', serif;
+    --body-font: 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body-font);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 2rem 1rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  nav .logo {
+    font-family: var(--heading-font);
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.02em;
+  }
+
+  nav .subtitle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  nav ul { list-style: none; }
+
+  nav ul li { margin-bottom: 0.2rem; }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    display: block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  nav a:hover, nav a.active {
+    background: var(--surface2);
+    color: var(--accent);
+  }
+
+  nav .section-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    font-weight: bold;
+    margin: 1.2rem 0 0.4rem 0.6rem;
+  }
+
+  main {
+    flex: 1;
+    padding: 3rem 3.5rem;
+    max-width: 920px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    border-left: 4px solid var(--accent);
+    padding: 2rem 2.5rem;
+    background: var(--surface);
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 3rem;
+  }
+
+  .hero h1 {
+    font-family: var(--heading-font);
+    font-size: 2.2rem;
+    color: #fff;
+    margin-bottom: 0.3rem;
+  }
+
+  .hero p { color: var(--muted); font-size: 0.95rem; }
+
+  /* ── Sections ── */
+  section { margin-bottom: 4rem; }
+
+  h2 {
+    font-family: var(--heading-font);
+    font-size: 1.55rem;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    color: var(--accent3);
+    margin: 1.6rem 0 0.6rem;
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 0.95rem;
+    color: var(--warn);
+    margin: 1.2rem 0 0.4rem;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  p { margin-bottom: 0.8rem; }
+
+  /* ── Cards / boxes ── */
+  .def-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+  }
+
+  .def-box.green { border-left-color: var(--accent3); }
+  .def-box.purple { border-left-color: var(--accent2); }
+  .def-box.orange { border-left-color: var(--warn); }
+
+  .def-box strong { color: var(--accent); }
+  .def-box.green strong { color: var(--accent3); }
+  .def-box.purple strong { color: var(--accent2); }
+  .def-box.orange strong { color: var(--warn); }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+
+  table {
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 300px;
+  }
+
+  th {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  td {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+  }
+
+  tr:hover td { background: #232840; }
+
+  /* ── Math / code ── */
+  .math {
+    font-family: var(--mono);
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.8rem 1.2rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+    color: #a5d8ff;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .math .op { color: #ff79c6; }
+  .math .attr { color: var(--accent3); }
+  .math .rel { color: var(--warn); }
+  .math .kw { color: var(--accent2); }
+
+  code {
+    font-family: var(--mono);
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.1em 0.4em;
+    font-size: 0.85em;
+    color: #a5d8ff;
+  }
+
+  /* ── Algorithm steps ── */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 0.8rem 0;
+  }
+
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+    align-items: flex-start;
+  }
+
+  .steps li::before {
+    content: counter(step);
+    background: var(--accent2);
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.8rem;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ── Exercise cards ── */
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin: 1.5rem 0;
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .ex-badge {
+    background: var(--accent2);
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .ex-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .sub-exercise { margin: 1.2rem 0; }
+
+  .sub-q {
+    font-weight: 600;
+    color: var(--warn);
+    margin-bottom: 0.4rem;
+  }
+
+  .solution {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.2rem;
+    margin-top: 0.5rem;
+  }
+
+  .sol-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent3);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .sol-explain {
+    color: var(--muted);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+
+  /* ── Axioms list ── */
+  .axiom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .axiom-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+  }
+
+  .axiom-card .name {
+    font-weight: bold;
+    color: var(--accent2);
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .axiom-card .formula {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: #a5d8ff;
+  }
+
+  /* ── FN comparison ── */
+  .fn-table td:first-child { color: var(--accent); font-weight: bold; }
+
+  /* ── Operator reference ── */
+  .op-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .op-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+  }
+
+  .op-card .op-name { font-weight: bold; color: var(--accent); font-size: 0.9rem; }
+  .op-card .op-sym { font-family: var(--mono); color: #ff79c6; font-size: 1rem; }
+  .op-card .op-desc { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+  .op-card .op-ex { font-family: var(--mono); font-size: 0.78rem; color: #a5d8ff; margin-top: 0.4rem; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    nav { display: none; }
+    main { padding: 1.5rem; }
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    color: var(--muted);
+    margin: 0.1rem;
+  }
+
+  .inline-table-group { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+  .inline-table-group table { min-width: unset; }
+  .inline-table-group th { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ════════════════ NAV ════════════════ -->
+<nav>
+  <div class="logo">Bases de Datos</div>
+  <div class="subtitle">Modelo Relacional · UPM ETSI Informáticos</div>
+  <ul>
+    <div class="section-label">Teoría</div>
+    <li><a href="#intro">1. Introducción</a></li>
+    <li><a href="#atributos">2. Atributos y dominios</a></li>
+    <li><a href="#dep-func">3. Dependencias funcionales</a></li>
+    <li><a href="#claves">4. Claves</a></li>
+    <li><a href="#algebra">5. Álgebra relacional</a></li>
+    <li><a href="#op-basicos">── Operadores básicos</a></li>
+    <li><a href="#op-derivados">── Operadores derivados</a></li>
+    <li><a href="#diseno">6. Principios de diseño</a></li>
+    <li><a href="#cierre">── Cierre de descriptor</a></li>
+    <li><a href="#recubrimiento">── Recubrimiento no redundante</a></li>
+    <li><a href="#calc-clave">── Cálculo de clave</a></li>
+    <li><a href="#normalizacion">7. Normalización</a></li>
+    <li><a href="#fn">── Formas normales (1FN–FNBC)</a></li>
+    <li><a href="#ullman">── Algoritmo de Ullman</a></li>
+    <div class="section-label">Ejercicios resueltos</div>
+    <li><a href="#ej1">Ej 1 · Empleados y proyectos</a></li>
+    <li><a href="#ej2">Ej 2 · Deportistas</a></li>
+    <li><a href="#ej3">Ej 3 · Recubrimiento / Ullman</a></li>
+    <li><a href="#ej4">Ej 4 · Diseño 3FN lossless</a></li>
+    <li><a href="#ej5">Ej 5 · Equivalencia de esquemas</a></li>
+    <li><a href="#ej6">Ej 6 · Empleados + proyectos (diseño)</a></li>
+    <li><a href="#ej7">Ej 7 · Cines y carteleras</a></li>
+  </ul>
+</nav>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main>
+
+<div class="hero">
+  <h1>Modelo Relacional</h1>
+  <p>Apuntes completos + ejercicios resueltos · Bases de Datos · ETSI Informáticos UPM · Antonio J. Díaz Honrubia</p>
+</div>
+
+<!-- ══════════════════════════════════════
+     1. INTRODUCCIÓN
+═══════════════════════════════════════ -->
+<section id="intro">
+  <h2>1. Introducción al Modelo Relacional</h2>
+
+  <p>La <strong>estructura fundamental</strong> del Modelo Relacional es la <strong style="color:var(--accent)">relación</strong>. Matemáticamente, una relación R de orden n definida sobre conjuntos A₁, A₂, …, Aₙ es un subconjunto del producto cartesiano A₁ × A₂ × … × Aₙ.</p>
+
+  <div class="def-box">
+    <strong>Grado / Orden</strong> — número de atributos (columnas) de la relación.<br>
+    <strong>Cardinalidad</strong> — número de tuplas (filas) de la relación.<br>
+    <strong>Tupla</strong> — cada uno de los elementos de la relación.
+  </div>
+
+  <h3>Ejemplo concreto</h3>
+  <p>Sean A = {a, b, c} y B = {1, 2}. Dos relaciones de orden 2 son:</p>
+  <div class="math">R₁ = {(a,1), (a,2), (c,2)}   <span class="op">→</span> cardinalidad 3
+R₂ = {(a,1), (b,1)}          <span class="op">→</span> cardinalidad 2</div>
+
+  <p>La tupla (a,1) pertenece a R₁. El grado de ambas es 2, porque tienen dos atributos (A y B).</p>
+
+  <h3>Propiedades fundamentales de una relación</h3>
+  <div class="def-box green">
+    Una relación es un <strong>conjunto</strong>, por lo tanto:<br>
+    • <strong>No puede haber tuplas duplicadas.</strong><br>
+    • <strong>No hay un orden definido</strong> sobre las tuplas (son un conjunto, no una lista).
+  </div>
+
+  <h3>Representación tabular</h3>
+  <p>La forma habitual de visualizar una relación es como una tabla:</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>A</th><th>B</th><th>C</th></tr>
+      <tr><td>a</td><td>5</td><td>y</td></tr>
+      <tr><td>c</td><td>10</td><td>x</td></tr>
+      <tr><td>b</td><td>1</td><td>y</td></tr>
+    </table>
+  </div>
+  <p>El número de columnas es el grado; el número de filas, la cardinalidad; cada columna corresponde a un atributo.</p>
+</section>
+
+<!-- ══════════════════════════════════════
+     2. ATRIBUTOS Y DOMINIOS
+═══════════════════════════════════════ -->
+<section id="atributos">
+  <h2>2. Atributos y dominios</h2>
+
+  <div class="def-box">
+    <strong>Atributo</strong> — cada "dimensión" o propiedad de la relación (columna).<br>
+    <strong>Dominio</strong> — conjunto de valores posibles para un atributo. Puede ser finito o infinito.<br>
+    <strong>Universo T</strong> — conjunto de <em>todos</em> los atributos de un problema. Siempre finito.<br>
+    <strong>Descriptor X</strong> — cualquier subconjunto de T. Se escribe concatenado: X = AC significa X = {A, C}.
+  </div>
+
+  <h3>Tipos de dominios</h3>
+  <p>Dominios comunes: <code>integer</code>, <code>real</code>, <code>date</code>, <code>datetime</code>, <code>character</code>, <code>string</code>. El valor especial <strong>NULL</strong> representa "desconocido" o "sin valor". Ojo: <code>0</code> y la cadena vacía <code>""</code> <em>no</em> son NULL.</p>
+
+  <h3>Reglas sobre atributos</h3>
+  <p>• No puede haber dos atributos distintos con el mismo nombre en la misma relación.<br>
+     • Atributos distintos pueden compartir el mismo dominio.<br>
+     • La elección del nombre del atributo es independiente de su dominio.</p>
+</section>
+
+<!-- ══════════════════════════════════════
+     3. DEPENDENCIAS FUNCIONALES
+═══════════════════════════════════════ -->
+<section id="dep-func">
+  <h2>3. Dependencias funcionales</h2>
+
+  <div class="def-box purple">
+    Si X e Y son descriptores y, dado un valor de X, el valor de Y queda unívocamente determinado, existe la <strong>dependencia funcional</strong> X → Y.<br>
+    Se lee: "<em>X implica Y</em>" o "<em>Y depende funcionalmente de X</em>".
+  </div>
+
+  <h3>Dependencia total vs. parcial</h3>
+  <p>La dependencia X → Y es <strong>total</strong> si no existe ningún subconjunto propio Z ⊂ X tal que Z → Y. En caso contrario es <strong>parcial</strong> (Y depende de una parte de X, no de X completo).</p>
+
+  <h3>Esquema de una relación</h3>
+  <p>El <strong>esquema</strong> R(T, L) es el par formado por el universo de atributos T y el conjunto de dependencias L. La <strong>relación universal</strong> R(T, L) incluye todos los atributos del problema.</p>
+
+  <h3>Axiomas de Armstrong</h3>
+  <p>Permiten deducir nuevas dependencias a partir de las conocidas. Son <em>sólidos</em> (todo lo deducido es correcto) y <em>completos</em> (todo lo que se puede deducir se puede deducir con ellos).</p>
+
+  <div class="axiom-grid">
+    <div class="axiom-card">
+      <div class="name">Reflexividad (primario)</div>
+      <div class="formula">Si Y ⊆ X, entonces X → Y<br>En particular: X → X</div>
+    </div>
+    <div class="axiom-card">
+      <div class="name">Aumento (primario)</div>
+      <div class="formula">Si X → Y, entonces XZ → YZ<br>para cualquier descriptor Z</div>
+    </div>
+    <div class="axiom-card">
+      <div class="name">Transitividad (primario)</div>
+      <div class="formula">Si X → Y e Y → Z,<br>entonces X → Z</div>
+    </div>
+    <div class="axiom-card">
+      <div class="name">Proyectividad (derivado)</div>
+      <div class="formula">Si X → YZ, entonces X → Y</div>
+    </div>
+    <div class="axiom-card">
+      <div class="name">Aditividad (derivado)</div>
+      <div class="formula">Si X → Y y Z → W,<br>entonces XZ → YW</div>
+    </div>
+    <div class="axiom-card">
+      <div class="name">Unión (derivado)</div>
+      <div class="formula">Si X → Y y X → Z,<br>entonces X → YZ</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     4. CLAVES
+═══════════════════════════════════════ -->
+<section id="claves">
+  <h2>4. Claves de una relación</h2>
+
+  <div class="def-box">
+    Dada R sobre T, un descriptor K es <strong>superclave</strong> si K → T.<br>
+    Si además K es el subconjunto <em>mínimo</em> posible que determina T, es <strong>clave candidata</strong>.<br>
+    De entre todas las candidatas, se elige una como <strong>clave primaria</strong>; las demás son <strong>claves alternativas</strong>.
+  </div>
+
+  <div class="def-box orange">
+    <strong>Atributo primario / clave</strong> — atributo que pertenece a <em>alguna</em> clave candidata.<br>
+    <strong>Integridad de entidad</strong> — no se puede insertar una tupla si se desconoce el valor de algún atributo primario (clave primaria nunca puede ser NULL).
+  </div>
+
+  <div class="def-box green">
+    <strong>Claves foráneas (foreign keys)</strong> — restricciones de integridad referencial: el valor de ciertos atributos en una relación debe existir como clave primaria en otra relación. Garantizan la consistencia entre tablas.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     5. ÁLGEBRA RELACIONAL
+═══════════════════════════════════════ -->
+<section id="algebra">
+  <h2>5. Álgebra Relacional</h2>
+
+  <p>El álgebra relacional define un conjunto de <strong>operadores</strong> que, aplicados a relaciones, producen nuevas relaciones (<em>relaciones derivadas</em>). Es la base teórica del lenguaje SQL.</p>
+
+  <p>Existe también el <strong>cálculo relacional</strong> (lógica de predicados), equivalente al álgebra pero con distinta notación. Nosotros usaremos el álgebra.</p>
+</section>
+
+<section id="op-basicos">
+  <h2>5.1 Operadores básicos (primitivos)</h2>
+
+  <div class="op-grid">
+    <div class="op-card">
+      <div class="op-name">Proyección <span class="op-sym">π</span></div>
+      <div class="op-desc">Selecciona columnas. Elimina duplicados automáticamente.</div>
+      <div class="op-ex">π<sub>A,B</sub>(R) → relación con solo atributos A y B</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Selección <span class="op-sym">σ</span></div>
+      <div class="op-desc">Filtra filas según una condición lógica f.</div>
+      <div class="op-ex">σ<sub>Nota>5</sub>(Calificación)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Unión <span class="op-sym">∪</span></div>
+      <div class="op-desc">Combina tuplas de dos relaciones con los mismos atributos. Sin duplicados.</div>
+      <div class="op-ex">R ∪ S  (requiere mismos atributos)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Diferencia <span class="op-sym">−</span></div>
+      <div class="op-desc">Tuplas de R que NO están en S. Requieren mismos atributos.</div>
+      <div class="op-ex">R − S  (todas las de R no en S)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Producto cartesiano <span class="op-sym">×</span></div>
+      <div class="op-desc">Concatena cada tupla de R con cada tupla de S. Resultado: |R|·|S| tuplas.</div>
+      <div class="op-ex">R × S</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Asignación <span class="op-sym">:=</span></div>
+      <div class="op-desc">Almacena el resultado de una expresión en una nueva relación temporal.</div>
+      <div class="op-ex">Temp := σ<sub>cond</sub>(R)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Renombrado <span class="op-sym">ρ</span></div>
+      <div class="op-desc">Cambia el nombre de la relación y/o sus atributos.</div>
+      <div class="op-ex">ρ<sub>Notas(Est,Curso,Nota)</sub>(Calif.)</div>
+    </div>
+  </div>
+
+  <h3>Ejemplos de proyección y selección</h3>
+
+  <h4>Proyección: obtener las provincias distintas</h4>
+  <div class="math"><span class="op">π</span><span class="attr">Provincia</span>(<span class="rel">Localidad</span>)</div>
+  <p>Si Localidad tiene tuplas (Pozuelo, Madrid) y (Alcorcón, Madrid), el resultado es una única fila con "Madrid", porque la proyección elimina duplicados.</p>
+
+  <h4>Selección: alumnos con nota mayor que 5</h4>
+  <div class="math"><span class="op">σ</span><sub>Nota&gt;5</sub>(<span class="rel">Calificación</span>)</div>
+  <p>Devuelve todas las tuplas de Calificación donde el atributo Nota sea estrictamente mayor que 5. Combinar condiciones con ∧ (AND) o ∨ (OR):</p>
+  <div class="math"><span class="op">σ</span><sub>Nota&gt;5 ∧ Nombre="Pepe"</sub>(<span class="rel">Calificación</span>)</div>
+</section>
+
+<section id="op-derivados">
+  <h2>5.2 Operadores derivados (extendidos)</h2>
+
+  <div class="op-grid">
+    <div class="op-card">
+      <div class="op-name">Natural join <span class="op-sym">⋈</span></div>
+      <div class="op-desc">Producto cartesiano + selección por atributos comunes iguales. El atributo común aparece una sola vez.</div>
+      <div class="op-ex">Estudiante ⋈ Calificación<br>= σ<sub>E.Nombre=C.Nombre</sub>(E × C)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Join condicional <span class="op-sym">⋈<sub>cond</sub></span></div>
+      <div class="op-desc">Como el natural join pero con una condición arbitraria (no tiene que ser igualdad en atributos comunes).</div>
+      <div class="op-ex">Calif. ⋈<sub>C.Nota≥N.Nota</sub> NotaAlf.</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">División <span class="op-sym">÷</span></div>
+      <div class="op-desc">R ÷ S: tuplas de R que se combinan con <em>todas</em> las de S. Útil para consultas "todos/todas".</div>
+      <div class="op-ex">Matrícula ÷ Asignatura<br>→ alumnos de todas las asignaturas</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Intersección <span class="op-sym">∩</span></div>
+      <div class="op-desc">Tuplas que están en ambas relaciones. Mismos atributos requeridos.</div>
+      <div class="op-ex">R ∩ S = R − (R − S)</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Full outer join <span class="op-sym">⟗</span></div>
+      <div class="op-desc">Natural join + tuplas sin pareja de ambas relaciones (con NULL donde corresponda).</div>
+      <div class="op-ex">E ⟗ C</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Left outer join <span class="op-sym">⟕</span></div>
+      <div class="op-desc">Natural join + todas las tuplas de la izquierda, rellenando con NULL las de la derecha que no encajan.</div>
+      <div class="op-ex">E ⟕ C</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name">Right outer join <span class="op-sym">⟖</span></div>
+      <div class="op-desc">Natural join + todas las tuplas de la derecha, rellenando con NULL las de la izquierda.</div>
+      <div class="op-ex">E ⟖ C</div>
+    </div>
+  </div>
+
+  <h3>División en detalle</h3>
+  <p>R ÷ S devuelve el conjunto de tuplas t tal que para todo tₛ ∈ S, existe tᵣ ∈ R con tᵣ(atrib. de R no en S) = t y tᵣ(atrib. de S) = tₛ.</p>
+  <p><strong>Ejemplo:</strong> ¿Qué alumnos están matriculados en <em>todas</em> las asignaturas?</p>
+  <div class="math"><span class="rel">Matrícula</span>(Nombre, Asignatura) <span class="op">÷</span> <span class="rel">Asignatura</span>(NombreAsignatura)
+<span class="op">→</span> Resultado: {Pepe, María}  (los únicos con todas las asignaturas)</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     6. PRINCIPIOS DE DISEÑO
+═══════════════════════════════════════ -->
+<section id="diseno">
+  <h2>6. Principios de diseño de bases de datos</h2>
+  <p>El objetivo del diseño relacional es minimizar redundancia y anomalías (de inserción, borrado y actualización).</p>
+</section>
+
+<section id="cierre">
+  <h2>6.1 Cierre de un descriptor</h2>
+
+  <div class="def-box purple">
+    El <strong>cierre X⁺</strong> de un descriptor X respecto al conjunto de dependencias L es el mayor conjunto de atributos que X puede determinar usando L y los axiomas de Armstrong.
+  </div>
+
+  <p>Propiedades que definen X⁺:</p>
+  <p>1) X ⊆ X⁺ &nbsp;|&nbsp; 2) X → X⁺ &nbsp;|&nbsp; 3) No existe Y ⊋ X⁺ tal que X → Y</p>
+
+  <h3>Algoritmo para calcular X⁺</h3>
+  <ol class="steps">
+    <li>Inicializar: X⁰ := X</li>
+    <li>Repetir: Xⁱ⁺¹ := Xⁱ ∪ Y para toda dependencia (Z → Y) ∈ L con Z ⊆ Xⁱ</li>
+    <li>Parar cuando Xⁱ⁺¹ = Xⁱ. Ese Xⁱ es X⁺.</li>
+  </ol>
+
+  <h3>Ejemplo (de los apuntes)</h3>
+  <p>T = {A,B,C,D,E,F}, L = {A→BC, C→D, AC→E, AB→C, F→A}, X = ABE</p>
+  <div class="math">X⁰ = ABE
+X¹ = ABE ∪ BC  (aplicando A→BC, pues A ⊆ X⁰) = ABCE
+X² = ABCE ∪ D  (aplicando C→D, pues C ⊆ X¹) = ABCED
+X³ = ABCED      (ninguna regla añade nada nuevo)
+X³ = X²  →  X⁺ = ABCED</div>
+</section>
+
+<section id="recubrimiento">
+  <h2>6.2 Recubrimiento no redundante</h2>
+
+  <div class="def-box">
+    M es <strong>recubrimiento no redundante</strong> de L si:<br>
+    1) L⁺ = M⁺ (equivalentes)<br>
+    2) Toda dependencia de M tiene implicado simple (solo un atributo a la derecha)<br>
+    3) En todos los implicantes no hay atributos superfluos<br>
+    4) En M no hay dependencias redundantes
+  </div>
+
+  <h3>Algoritmo (3 pasos)</h3>
+  <ol class="steps">
+    <li><strong>Obtener implicados simples:</strong> aplicar proyectividad hasta que todo implicado sea un solo atributo. (A→BC se convierte en A→B y A→C).</li>
+    <li><strong>Eliminar atributos superfluos en implicantes:</strong> para cada atributo X en un implicante compuesto XZ→Y, comprobar si Z→Y es deducible sin usar dicha dependencia. Si el cierre de X en L sin esa dependencia ya contiene a Y, el atributo es superfluo.</li>
+    <li><strong>Eliminar dependencias redundantes:</strong> para cada dependencia X→Y, comprobar si el cierre de X en L sin esa dependencia ya contiene a Y.</li>
+  </ol>
+</section>
+
+<section id="calc-clave">
+  <h2>6.3 Algoritmo para calcular una clave</h2>
+
+  <p>Dado un esquema R(T, L) con L no redundante, definimos 4 conjuntos:</p>
+  <div class="def-box">
+    <strong>I</strong> — atributos que aparecen solo en implicantes (izquierda) de L.<br>
+    <strong>D</strong> — atributos que aparecen solo en implicados (derecha) de L.<br>
+    <strong>ID</strong> — atributos que aparecen a ambos lados de dependencias en L.<br>
+    <strong>N</strong> — atributos que no aparecen en ninguna dependencia de L.<br>
+    <strong>Z = I ∪ N</strong> → es el <em>núcleo</em> (intersección de todas las claves candidatas).
+  </div>
+
+  <p>Si Z⁺ = T, entonces Z es la clave única. Si no, se añaden atributos de ID hasta que el cierre sea T. Cada subconjunto mínimo que alcanza T es una clave candidata.</p>
+
+  <h3>Ejemplo: clave única</h3>
+  <p>T={A,B,C,D,E,F}, L={A→B, C→D, A→E, A→C, F→A}</p>
+  <div class="math">I = {F}  (solo aparece a la izquierda)
+D = {B,D,E}  (solo aparecen a la derecha)
+ID = {A,C}   (aparecen a ambos lados)
+N = {}
+
+Z = I ∪ N = {F}
+Z⁺ = F⁺ = ABCDEF = T  →  F es clave única.</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     7. NORMALIZACIÓN
+═══════════════════════════════════════ -->
+<section id="normalizacion">
+  <h2>7. Normalización de bases de datos</h2>
+
+  <p>La <strong>normalización</strong> es el proceso de reorganizar un esquema relacional para eliminar redundancia, reducir costes de actualización y proteger la integridad de los datos.</p>
+</section>
+
+<section id="fn">
+  <h2>7.1 Formas Normales</h2>
+
+  <div class="table-wrap">
+    <table class="fn-table">
+      <tr><th>Forma normal</th><th>Requisito adicional sobre la anterior</th></tr>
+      <tr>
+        <td>1FN</td>
+        <td>Atributos atómicos, clave primaria definida, sin duplicados, sin valores nulos en clave, todos los no-clave dependen funcionalmente de la clave.</td>
+      </tr>
+      <tr>
+        <td>2FN</td>
+        <td>Está en 1FN. Ningún atributo no-clave depende <em>parcialmente</em> de una clave (solo se viola si la clave es compuesta).</td>
+      </tr>
+      <tr>
+        <td>3FN</td>
+        <td>Está en 2FN. Ningún atributo no-clave depende <em>transitivamente</em> de una clave. En resumen: todo atributo no-clave depende de <em>una clave, la clave completa y nada más que la clave</em>.</td>
+      </tr>
+      <tr>
+        <td>FNBC</td>
+        <td>Versión más fuerte de 3FN: todo implicante de cualquier dependencia no trivial debe ser superclave (clave candidata). Si A→B, entonces A debe ser clave.</td>
+      </tr>
+      <tr>
+        <td>4FN</td>
+        <td>Está en FNBC. No existen dependencias multivaluadas no triviales independientes con el mismo implicante.</td>
+      </tr>
+      <tr>
+        <td>5FN</td>
+        <td>Está en 4FN y no puede descomponerse sin pérdida de información.</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>Anomalías</h3>
+  <div class="def-box orange">
+    <strong>Anomalía de inserción</strong> — no se pueden insertar datos de una entidad sin conocer datos de otra entidad ligada por la clave.<br>
+    <strong>Anomalía de borrado</strong> — al eliminar la única tupla que contiene cierta información, se pierde esa información colateralmente.<br>
+    <strong>Anomalía de actualización</strong> — modificar un dato repetido en varias filas puede dejar la BD inconsistente si solo se actualiza en algunas.
+  </div>
+</section>
+
+<section id="ullman">
+  <h2>7.2 Algoritmo de Ullman (descomposición en 3FN)</h2>
+
+  <p>El algoritmo de Ullman descompone un esquema R(T,L) en subesquemas R₁,…,Rₙ tal que: cada Rᵢ está en 3FN, se preservan las dependencias y es <strong>lossless-join</strong> (la relación original se puede reconstruir haciendo join de los subesquemas).</p>
+
+  <ol class="steps">
+    <li><strong>Obtener el recubrimiento no redundante</strong> de L (3 pasos del apartado anterior).</li>
+    <li><strong>Calcular una clave</strong> del esquema original con el algoritmo I/D/ID/N.</li>
+    <li><strong>Agrupar dependencias</strong> con el mismo implicante en una misma relación: Rᵢ(Tᵢ, Lᵢ) donde Tᵢ es el implicante + sus implicados.</li>
+    <li><strong>Eliminar subesquemas redundantes</strong>: si Tᵢ ⊆ Tⱼ para algún j≠i, eliminar Rᵢ.</li>
+    <li><strong>Garantizar la clave</strong>: si ningún subesquema contiene la clave calculada, añadir un nuevo subesquema R₀ con los atributos de dicha clave.</li>
+  </ol>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJERCICIOS RESUELTOS
+═══════════════════════════════════════ -->
+<section id="ej1">
+  <h2>Ejercicio 1 — Empleados y Proyectos (Álgebra Relacional)</h2>
+
+  <p>Relaciones dadas:</p>
+  <div class="inline-table-group">
+    <div>
+      <strong>EMPLEADO</strong>
+      <div class="table-wrap">
+        <table>
+          <tr><th>cod_empleado</th><th>nombre</th><th>cod_proyecto</th></tr>
+          <tr><td>E093720</td><td>John</td><td>V9834</td></tr>
+          <tr><td>E084902</td><td>Jane</td><td>V9834</td></tr>
+          <tr><td>E092382</td><td>Juan</td><td>V9836</td></tr>
+          <tr><td>E828737</td><td>Luis</td><td>V9836</td></tr>
+          <tr><td>E828737</td><td>Luis</td><td>V9834</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <strong>PROYECTO</strong>
+      <div class="table-wrap">
+        <table>
+          <tr><th>cod_proyecto</th><th>nombre_proyecto</th></tr>
+          <tr><td>V9834</td><td>ETL</td></tr>
+          <tr><td>V9836</td><td>Data mining</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">a</span>
+      <span class="ex-title">Listado con todos los códigos de empleado</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">cod_empleado</span>(<span class="rel">EMPLEADO</span>)</div>
+      <p class="sol-explain">La proyección sobre cod_empleado extrae solo esa columna. Como Luis aparece dos veces (en V9836 y V9834), la proyección elimina duplicados y E828737 aparece una sola vez. Resultado: {E093720, E084902, E092382, E828737}.</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">b</span>
+      <span class="ex-title">Nombre del empleado con código "E828737"</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">nombre</span>(<span class="op">σ</span><sub>cod_empleado="E828737"</sub>(<span class="rel">EMPLEADO</span>))</div>
+      <p class="sol-explain">Primero σ filtra las filas donde cod_empleado = "E828737" (las dos filas de Luis), luego π extrae solo el nombre. Resultado: {Luis}.</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">c</span>
+      <span class="ex-title">Códigos de empleados que NO trabajan en el proyecto "V0001"</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">cod_empleado</span>(<span class="rel">EMPLEADO</span>) <span class="op">−</span>
+<span class="op">π</span><span class="attr">cod_empleado</span>(<span class="op">σ</span><sub>cod_proyecto="V0001"</sub>(<span class="rel">EMPLEADO</span>))</div>
+      <p class="sol-explain">Tomamos todos los códigos y le restamos los que sí trabajan en V0001. Como V0001 no existe en los datos, la diferencia es el conjunto completo. Esta técnica es la estándar para "los que no cumplen X".</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">d</span>
+      <span class="ex-title">Nombre de cada empleado junto al nombre de los proyectos en que trabaja</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">nombre, nombre_proyecto</span>(<span class="rel">EMPLEADO</span> <span class="op">⋈</span> <span class="rel">PROYECTO</span>)</div>
+      <p class="sol-explain">El natural join une EMPLEADO y PROYECTO por cod_proyecto (atributo común). Obtenemos todas las combinaciones válidas empleado–proyecto. Luego proyectamos solo nombre y nombre_proyecto. Resultado: (John,ETL), (Jane,ETL), (Juan,Data mining), (Luis,Data mining), (Luis,ETL).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">e</span>
+      <span class="ex-title">Nombre y código de empleados que NO trabajan en "Data Mining"</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">DataMining := <span class="op">π</span><span class="attr">cod_empleado</span>(<span class="rel">EMPLEADO</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_proyecto="Data mining"</sub>(<span class="rel">PROYECTO</span>))
+
+Todos := <span class="op">π</span><span class="attr">cod_empleado, nombre</span>(<span class="rel">EMPLEADO</span>)
+
+Resultado := Todos <span class="op">−</span> <span class="op">π</span><span class="attr">cod_empleado, nombre</span>(<span class="rel">EMPLEADO</span> <span class="op">⋈</span><sub>cod_empleado∈DataMining</sub>)</div>
+      <p class="sol-explain">Estrategia alternativa más directa: unimos EMPLEADO con PROYECTO filtrado por "Data mining" para saber quiénes trabajan en ese proyecto; luego hacemos diferencia con el conjunto total de empleados. Solo John y Jane trabajan en ETL (no en Data mining); Juan y Luis sí trabajan en Data mining.</p>
+      <div class="math"><span class="kw">Forma directa:</span>
+<span class="op">π</span><span class="attr">nombre, cod_empleado</span>(<span class="rel">EMPLEADO</span>) <span class="op">−</span>
+<span class="op">π</span><span class="attr">nombre, cod_empleado</span>(<span class="rel">EMPLEADO</span> <span class="op">⋈</span> (<span class="op">σ</span><sub>nombre_proyecto="Data mining"</sub>(<span class="rel">PROYECTO</span>)))</div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">f</span>
+      <span class="ex-title">Proyectos en los que trabajan TODOS los empleados llamados "John"</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="kw">Paso 1:</span> Johns := <span class="op">π</span><span class="attr">cod_empleado</span>(<span class="op">σ</span><sub>nombre="John"</sub>(<span class="rel">EMPLEADO</span>))
+<span class="kw">Paso 2:</span> ProyectosJohns := <span class="op">π</span><span class="attr">cod_empleado, cod_proyecto</span>(<span class="rel">EMPLEADO</span>) <span class="op">÷</span> Johns
+<span class="kw">Paso 3:</span> <span class="op">π</span><span class="attr">nombre_proyecto</span>(ProyectosJohns <span class="op">⋈</span> <span class="rel">PROYECTO</span>)</div>
+      <p class="sol-explain">Usamos división para obtener los proyectos donde aparece cada John. En la tabla, John (E093720) solo trabaja en V9834 (ETL). Resultado: {ETL}.</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">g</span>
+      <span class="ex-title">Códigos de empleados que trabajan en los MISMOS proyectos que E828737</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="kw">Paso 1:</span> ProsLuis := <span class="op">π</span><span class="attr">cod_proyecto</span>(<span class="op">σ</span><sub>cod_empleado="E828737"</sub>(<span class="rel">EMPLEADO</span>))
+<span class="kw">Paso 2:</span> <span class="op">π</span><span class="attr">cod_empleado</span>(<span class="rel">EMPLEADO</span>) <span class="op">÷</span> ProsLuis</div>
+      <p class="sol-explain">Luis trabaja en V9834 y V9836. La división devuelve los empleados que aparecen en AMBOS proyectos. John solo está en V9834, Jane solo en V9834, Juan solo en V9836. Solo Luis está en ambos. Resultado: {E828737}.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 2: DEPORTISTAS
+═══════════════════════════════════════ -->
+<section id="ej2">
+  <h2>Ejercicio 2 — Deportistas (Álgebra Relacional)</h2>
+
+  <div class="inline-table-group">
+    <div>
+      <strong>DEPORTISTA</strong>
+      <div class="table-wrap">
+        <table>
+          <tr><th>cod_dep</th><th>nombre</th><th>apellido</th></tr>
+          <tr><td>10012</td><td>Lidia</td><td>Jordan</td></tr>
+          <tr><td>10013</td><td>Sergio</td><td>García</td></tr>
+          <tr><td>10043</td><td>Teresa</td><td>Vergara</td></tr>
+          <tr><td>29349</td><td>Luis</td><td>Pérez</td></tr>
+          <tr><td>20972</td><td>Ángel</td><td>Castaño</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <strong>JUEGA</strong>
+      <div class="table-wrap">
+        <table>
+          <tr><th>cod_dep</th><th>cod_deporte</th></tr>
+          <tr><td>10012</td><td>1</td></tr>
+          <tr><td>10013</td><td>4</td></tr>
+          <tr><td>10012</td><td>2</td></tr>
+          <tr><td>10012</td><td>3</td></tr>
+          <tr><td>10013</td><td>3</td></tr>
+          <tr><td>20972</td><td>4</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <strong>DEPORTE</strong>
+      <div class="table-wrap">
+        <table>
+          <tr><th>cod_deporte</th><th>nombre_deporte</th></tr>
+          <tr><td>1</td><td>Golf</td></tr>
+          <tr><td>2</td><td>Baloncesto</td></tr>
+          <tr><td>3</td><td>Pádel</td></tr>
+          <tr><td>4</td><td>Balonmano</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">a</span><span class="ex-title">Todos los nombres diferentes de la relación DEPORTISTA</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">nombre</span>(<span class="rel">DEPORTISTA</span>)</div>
+      <p class="sol-explain">La proyección elimina automáticamente duplicados. Resultado: {Lidia, Sergio, Teresa, Luis, Ángel}.</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">b</span><span class="ex-title">Códigos de deportistas que juegan al deporte 2 (Baloncesto)</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">cod_deportista</span>(<span class="op">σ</span><sub>cod_deporte=2</sub>(<span class="rel">JUEGA</span>))</div>
+      <p class="sol-explain">Filtramos JUEGA por cod_deporte=2 y proyectamos los códigos. Resultado: {10012}.</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">c</span><span class="ex-title">Nombres y apellidos de deportistas que juegan al Pádel</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">Padel := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Pádel"</sub>(<span class="rel">DEPORTE</span>))
+
+<span class="op">π</span><span class="attr">nombre, apellido</span>(<span class="rel">DEPORTISTA</span> <span class="op">⋈</span> Padel)</div>
+      <p class="sol-explain">Primero obtenemos los códigos de deportistas que juegan al Pádel (cod_deporte=3): {10012, 10013}. Luego hacemos join con DEPORTISTA para obtener nombre y apellido. Resultado: (Lidia, Jordan), (Sergio, García).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">d</span><span class="ex-title">Nombre y apellido de cada deportista junto al deporte que juegan</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math"><span class="op">π</span><span class="attr">nombre, apellido, nombre_deporte</span>(<span class="rel">DEPORTISTA</span> <span class="op">⋈</span> <span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="rel">DEPORTE</span>)</div>
+      <p class="sol-explain">Encadenamos dos natural joins: DEPORTISTA ⋈ JUEGA (por cod_deportista) ⋈ DEPORTE (por cod_deporte). Solo aparecen deportistas que juegan al menos a un deporte (Teresa, Luis y Ángel que no aparecen en JUEGA no salen en el resultado inner join).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">e</span><span class="ex-title">Deportistas que juegan al Pádel Y al Golf</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">JueganPadel := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Pádel"</sub>(<span class="rel">DEPORTE</span>))
+JueganGolf  := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Golf"</sub>(<span class="rel">DEPORTE</span>))
+
+Ambos := JueganPadel <span class="op">∩</span> JueganGolf
+
+<span class="op">π</span><span class="attr">nombre, apellido</span>(<span class="rel">DEPORTISTA</span> <span class="op">⋈</span> Ambos)</div>
+      <p class="sol-explain">La intersección da los códigos que están en AMBOS conjuntos. JueganPadel={10012,10013}, JueganGolf={10012}. Intersección={10012}. Resultado: (Lidia, Jordan).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">f</span><span class="ex-title">Deportistas que juegan al Pádel O al Golf</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">JueganPadel := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Pádel"</sub>(<span class="rel">DEPORTE</span>))
+JueganGolf  := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Golf"</sub>(<span class="rel">DEPORTE</span>))
+
+<span class="op">π</span><span class="attr">nombre, apellido</span>(<span class="rel">DEPORTISTA</span> <span class="op">⋈</span> (JueganPadel <span class="op">∪</span> JueganGolf))</div>
+      <p class="sol-explain">La unión da {10012,10013} ∪ {10012} = {10012,10013}. Resultado: (Lidia,Jordan), (Sergio,García).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">g</span><span class="ex-title">Deportistas que juegan al Pádel pero NO al Golf</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">JueganPadel := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Pádel"</sub>(<span class="rel">DEPORTE</span>))
+JueganGolf  := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> <span class="op">σ</span><sub>nombre_deporte="Golf"</sub>(<span class="rel">DEPORTE</span>))
+
+<span class="op">π</span><span class="attr">nombre, apellido</span>(<span class="rel">DEPORTISTA</span> <span class="op">⋈</span> (JueganPadel <span class="op">−</span> JueganGolf))</div>
+      <p class="sol-explain">Diferencia: {10012,10013} − {10012} = {10013}. Resultado: (Sergio, García).</p>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <div class="exercise-header"><span class="ex-badge">h</span><span class="ex-title">Códigos de deportes en que juega alguna deportista llamada "Lidia"</span></div>
+    <div class="solution">
+      <div class="sol-label">Solución</div>
+      <div class="math">Lidias := <span class="op">π</span><span class="attr">cod_deportista</span>(<span class="op">σ</span><sub>nombre="Lidia"</sub>(<span class="rel">DEPORTISTA</span>))
+
+<span class="op">π</span><span class="attr">cod_deporte</span>(<span class="rel">JUEGA</span> <span class="op">⋈</span> Lidias)</div>
+      <p class="sol-explain">Lidia tiene cod_deportista=10012. En JUEGA aparece con deportes 1(Golf), 2(Baloncesto), 3(Pádel). Resultado: {1, 2, 3}.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 3: RECUBRIMIENTO + ULLMAN
+═══════════════════════════════════════ -->
+<section id="ej3">
+  <h2>Ejercicio 3 — Recubrimiento no redundante y Ullman</h2>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">Datos</span>
+      <span class="ex-title">T = {P,S,D,A,Z,X,V,E} &nbsp; L = {P→SDA, D→Z, AZX→V, SV→E, PX→E}</span>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">a) Recubrimiento no redundante</div>
+      <div class="solution">
+        <div class="sol-label">Paso 1: implicados simples (proyectividad)</div>
+        <div class="math">P→SDA se descompone en: P→S, P→D, P→A
+Resto no cambia.
+
+L₁ = {P→S, P→D, P→A, D→Z, AZX→V, SV→E, PX→E}</div>
+
+        <div class="sol-label">Paso 2: eliminar atributos superfluos en implicantes</div>
+        <div class="math">AZX→V: ¿Es A superfluo? Cierre de ZX en L₁\{AZX→V}:
+  ZX⁺ = ZX  (Z y X no aparecen en ningún implicante del resto)
+  A ∉ ZX⁺ → A no es superfluo.
+
+¿Es Z superfluo? Cierre de AX en L₁\{AZX→V}:
+  AX⁺: A→S, A→D, A→A; D→Z; AX⁺ = ASDZ (añadimos S,D,Z)
+  V ∉ AX⁺ → Z no es superfluo.
+
+¿Es X superfluo? Cierre de AZ en L₁\{AZX→V}:
+  AZ⁺: A→S,D,A; D→Z; AZ⁺ = ASZD
+  V ∉ AZ⁺ → X no es superfluo.
+
+PX→E: ¿Es P superfluo? Cierre de X en L₁\{PX→E}:
+  X⁺ = X → E ∉ X⁺ → P no es superfluo.
+
+¿Es X superfluo? Cierre de P en L₁\{PX→E}:
+  P⁺ = PSDAZ (por P→S,P→D,P→A,D→Z)
+  E ∉ P⁺ → X no es superfluo.
+
+→ Sin cambios. L₂ = L₁.</div>
+
+        <div class="sol-label">Paso 3: eliminar dependencias redundantes</div>
+        <div class="math">¿P→S redundante? Cierre de P en L₂\{P→S}:
+  P⁺ = PDA Z  (P→D, P→A, D→Z) → S ∉ P⁺ → NO redundante.
+
+¿P→D redundante? Cierre de P en L₂\{P→D}:
+  P⁺ = PSA → D ∉ P⁺ → NO redundante.
+
+¿P→A redundante? Similar → NO redundante.
+
+¿SV→E redundante? Cierre de SV en L₂\{SV→E}:
+  SV⁺ = SV → E ∉ SV⁺ → NO redundante.
+
+¿PX→E redundante? Cierre de PX en L₂\{PX→E}:
+  PX⁺: P→S,D,A; D→Z; AZX→V; SV→E
+  PX⁰=PX; +S,D,A → PXSDA; +Z(de D) → PXSDAZ; +V(de AZX,X∈PX) → PXSDAZV; +E(de SV) → PXSDAZVE
+  E ∈ PX⁺ → PX→E ES REDUNDANTE. Eliminar.
+
+<strong>Recubrimiento no redundante M:</strong>
+M = {P→S, P→D, P→A, D→Z, AZX→V, SV→E}</div>
+        <p class="sol-explain">PX→E es redundante porque PX ya implica S y V (vía P→S y AZX→V con X en el implicante), y luego SV→E da E. Por tanto podemos prescindir de PX→E.</p>
+      </div>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">b) Claves candidatas</div>
+      <div class="solution">
+        <div class="sol-label">Clasificar atributos con M</div>
+        <div class="math">I  = {P, X}      (solo aparecen a la izquierda)
+D  = {S, Z, V, E} (solo aparecen a la derecha)
+ID = {D, A}       (aparecen en ambos lados)
+N  = {}           (ningún atributo queda fuera)
+
+Z = I ∪ N = {P, X}
+
+Z⁺ = PX⁺:
+  PX⁰ = PX
+  +S,D,A  (P→S, P→D, P→A)
+  +Z      (D→Z)
+  +V      (AZX→V, pues A,Z,X ∈ PXSDAZ)
+  +E      (SV→E, pues S,V ∈ PXSDAZV)
+  = PXSDAZE... falta V? V ya está. Revisando: PXSDA Z V E = PSDAZXVE = T ✓
+
+Z⁺ = T → PX es clave única (solo hay una clave candidata).</div>
+      </div>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">c) Subesquemas con el algoritmo de Ullman</div>
+      <div class="solution">
+        <div class="sol-label">Paso 3: agrupar por implicante</div>
+        <div class="math">R₁(T₁,L₁): T₁=PSDAδ={P,S,D,A}  L₁={P→S, P→D, P→A}
+R₂(T₂,L₂): T₂={D,Z}           L₂={D→Z}
+R₃(T₃,L₃): T₃={A,Z,X,V}       L₃={AZX→V}
+R₄(T₄,L₄): T₄={S,V,E}         L₄={SV→E}</div>
+
+        <div class="sol-label">Paso 4: unir subesquemas proyección-de-otro</div>
+        <div class="math">Ninguno es subconjunto del otro (todos tienen atributos exclusivos).</div>
+
+        <div class="sol-label">Paso 5: verificar si algún subesquema contiene la clave PX</div>
+        <div class="math">R₁ contiene P pero no X.
+R₂ no contiene P ni X.
+R₃ contiene X pero no P.
+R₄ no contiene P ni X.
+→ Ninguno contiene {P,X}. Añadir R₀:
+
+R₀(T₀,L₀): T₀={P,X}  L₀={}
+
+<strong>Resultado final:</strong>
+R₀: (P, X)
+R₁: (P, S, D, A)
+R₂: (D, Z)
+R₃: (A, Z, X, V)
+R₄: (S, V, E)</div>
+        <p class="sol-explain">R₀ garantiza el lossless-join: contiene la clave PX con la que se puede reconstruir la relación universal haciendo join de todos los subesquemas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 4: DISEÑO 3FN LOSSLESS
+═══════════════════════════════════════ -->
+<section id="ej4">
+  <h2>Ejercicio 4 — Diseño en 3FN lossless-join</h2>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">Datos</span>
+      <span class="ex-title">T={A,B,C,D,E,F,G} &nbsp; L={B→CDE, DE→F, BG→D, DG→B, CF→D}</span>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">a) Diseño en 3FN y lossless-join (Algoritmo de Ullman)</div>
+      <div class="solution">
+        <div class="sol-label">Paso 1.1: implicados simples</div>
+        <div class="math">L₁ = {B→C, B→D, B→E, DE→F, BG→D, DG→B, CF→D}</div>
+
+        <div class="sol-label">Paso 1.2: eliminar atributos superfluos en implicantes</div>
+        <div class="math">BG→D: ¿Es B superfluo?
+  G⁺ en L₁\{BG→D} = G → D ∉ G⁺ → B no es superfluo.
+  ¿Es G superfluo?
+  B⁺ en L₁\{BG→D} = B→C,D,E; DE→F; CF→D → BCDEF → D ∈ B⁺
+  → G ES SUPERFLUO en BG→D. Sustituir por B→D.
+  Pero B→D ya existe en L₁. Eliminar BG→D.
+
+DG→B: ¿Es D superfluo?
+  G⁺ en L₁ (tras cambio anterior) = G → B ∉ G⁺ → D no es superfluo.
+  ¿Es G superfluo?
+  D⁺ en L (sin DG→B) = D → (ninguna dep comienza en D sola) = D
+  B ∉ D⁺ → G no es superfluo.
+
+CF→D: ¿Es C superfluo?
+  F⁺ sin CF→D = F → D ∉ F⁺ → C no superfluo.
+  ¿Es F superfluo?
+  C⁺ sin CF→D = C → D ∉ C⁺ → F no superfluo.
+
+L₂ = {B→C, B→D, B→E, DE→F, DG→B, CF→D}</div>
+
+        <div class="sol-label">Paso 1.3: eliminar dependencias redundantes</div>
+        <div class="math">¿B→D redundante? B⁺ en L₂\{B→D}: B→C,E; DE→F; DG→B; CF→D
+  B⁰=B; +C,E → BCE; ninguna dep aplica con solo B,C,E → D ∉ BCE → NO redundante.
+
+¿B→C redundante? Similar análisis → B⁺ = BDE; CF→D necesita C → NO.
+
+Puede verificarse que ninguna otra dependencia es redundante.
+
+<strong>Recubrimiento no redundante:</strong>
+M = {B→C, B→D, B→E, DE→F, DG→B, CF→D}</div>
+
+        <div class="sol-label">Paso 2: calcular clave</div>
+        <div class="math">I  = {A, G}   (A no aparece en ninguna dep; G solo a la izq en DG→B)
+D  = {F, E}  (solo a la derecha... E también en DE→F)
+   Revisando: B→E pone E a la derecha; DE→F pone E a la izquierda → E está en ID
+   F solo a la derecha → F ∈ D
+   A no aparece en ninguna dep → A ∈ N
+   G aparece solo a la izquierda (en DG→B) → G ∈ I
+
+I  = {G}
+D  = {F}
+ID = {B, C, D, E}
+N  = {A}
+
+Z = I ∪ N = {G, A}
+Z⁺ = GA⁺ = GA → G,A sin dependencias propias = GA ≠ T
+
+Añadimos de ID:
+  (GBA)⁺: G,B,A; B→C,D,E → GBACDE; DE→F → GBACDEF; DG→B(ya) → GBACDEFG... 
+  Revisando: GBACDFE. Falta G? No, G ∈ Z. Total = ABCDEGF = T ✓
+  → ABG es clave candidata.
+
+  (GCA)⁺: C,G,A; CF necesita F... C→? nada. DG→B necesita D. No alcanza T fácilmente.
+  CF→D: C∈GCA pero F no. Sigue siendo GCA sin llegar a T.
+  → GCA no es clave.
+
+  (GDA)⁺: G,D,A; DG→B → GDAB; B→C,E → GDABCE; DE→F(D,E∈set) → GDABCEF = T ✓
+  → ADG es clave candidata.
+
+Claves candidatas: ABG y ADG (entre otras posibles).</div>
+
+        <div class="sol-label">Paso 3-5: subesquemas</div>
+        <div class="math">Agrupando por implicante:
+Rα: T={B,C,D,E}  L={B→C, B→D, B→E}
+Rβ: T={D,E,F}    L={DE→F}
+Rγ: T={D,G,B}    L={DG→B}
+Rδ: T={C,F,D}    L={CF→D}
+
+Paso 4: ¿alguno es proyección de otro?
+  Rβ={D,E,F}: no está contenido en ninguno.
+  Ninguno es subconjunto de otro.
+
+Paso 5: ¿alguno contiene la clave ABG?
+  Rα={B,C,D,E}: contiene B pero no A ni G.
+  Rγ={D,G,B}: contiene G y B pero no A.
+  → Ninguno contiene ABG. Añadir R₀.
+
+<strong>Subesquemas finales:</strong>
+R₀: (A, B, G)          ← garantiza lossless-join
+Rα: (B, C, D, E)
+Rβ: (D, E, F)
+Rγ: (D, G, B)
+Rδ: (C, F, D)</div>
+      </div>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">b) Obtener los valores de B para los que F=5 y G=3</div>
+      <div class="solution">
+        <div class="sol-label">Consulta en álgebra relacional sobre el diseño resultante</div>
+        <div class="math"><span class="kw">Queremos B donde F=5 y G=3:</span>
+
+<span class="kw">Paso 1:</span> Obtener DE donde F=5 (desde Rβ):
+  TuplaF5 := <span class="op">π</span><span class="attr">D,E</span>(<span class="op">σ</span><sub>F=5</sub>(<span class="rel">Rβ</span>))
+
+<span class="kw">Paso 2:</span> Obtener B donde D ∈ TuplaF5 (desde Rα):
+  BconF5 := <span class="op">π</span><span class="attr">B</span>(<span class="rel">Rα</span> <span class="op">⋈</span> TuplaF5)
+
+<span class="kw">Paso 3:</span> Obtener B donde G=3 (desde Rγ):
+  BconG3 := <span class="op">π</span><span class="attr">B</span>(<span class="op">σ</span><sub>G=3</sub>(<span class="rel">Rγ</span>))
+
+<span class="kw">Paso 4:</span> Intersección (B que cumple ambas):
+  Resultado := BconF5 <span class="op">∩</span> BconG3</div>
+        <p class="sol-explain">Necesitamos navegar entre relaciones: F está en Rβ, G está en Rγ, y B se conecta con D en Rα. La clave del diseño es que el join de D enlaza Rβ y Rγ a través de Rα.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 5: EQUIVALENCIA DE ESQUEMAS
+═══════════════════════════════════════ -->
+<section id="ej5">
+  <h2>Ejercicio 5 — Equivalencia de esquemas R(T,L₁) y S(T,L₂)</h2>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">Datos</span>
+      <span class="ex-title">T={A,B,C,D,E,F} &nbsp;&nbsp; L₁={A→C, C→B, D→B, D→E, C→D} &nbsp;&nbsp; L₂={A→CD, BC→A, D→BE, C→D}</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Método: dos esquemas son equivalentes si L₁⁺ = L₂⁺, es decir, L₁ ⊆ L₂⁺ y L₂ ⊆ L₁⁺</div>
+
+      <div class="sol-label">Verificar que L₁ ⊆ L₂⁺ (cada dep de L₁ se deduce de L₂)</div>
+      <div class="math"><span class="kw">A→C:</span> A⁺ con L₂: A→CD (de A→CD) → C ∈ A⁺ ✓
+
+<span class="kw">C→B:</span> C⁺ con L₂: C→D (de C→D); D→BE → B ∈ C⁺ ✓
+
+<span class="kw">D→B:</span> D⁺ con L₂: D→BE → B ∈ D⁺ ✓
+
+<span class="kw">D→E:</span> D→BE → E ∈ D⁺ ✓
+
+<span class="kw">C→D:</span> C→D directamente en L₂ ✓
+
+→ Todas las dependencias de L₁ son deducibles de L₂. L₁ ⊆ L₂⁺.</div>
+
+      <div class="sol-label">Verificar que L₂ ⊆ L₁⁺ (cada dep de L₂ se deduce de L₁)</div>
+      <div class="math"><span class="kw">A→CD:</span> A⁺ con L₁: A→C; C→B; C→D → ABCD ⊇ {C,D} ✓
+
+<span class="kw">BC→A:</span> BC⁺ con L₁: C→B (ya tenemos B); C→D; D→B,E; A→C(necesitamos A a la izq)
+  BC⁰=BC; C→B(ya); C→D → BCD; D→B,E → BCDE
+  A ∉ BCDE → ¿podemos deducir BC→A?
+  Verifiquemos si hay algún camino: desde B y C no hay ninguna dependencia que dé A.
+  <span class="warn">A ∉ BC⁺ con L₁. BC→A NO es deducible de L₁.</span></div>
+
+      <div class="sol-label" style="color:var(--warn)">Conclusión</div>
+      <p style="color:var(--warn); font-weight:600;">Los esquemas NO son equivalentes. BC→A ∈ L₂ no puede deducirse de L₁, por lo que L₂⁺ ≠ L₁⁺.</p>
+      <p class="sol-explain">La dependencia BC→A implica que conocer el valor de B y C determina unívocamente A. En L₁ no hay ninguna cadena de dependencias que permita deducir esto. En L₁, A solo aparece como implicante (A→C), nunca como implicado.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 6: EMPLEADOS + PROYECTOS (DISEÑO)
+═══════════════════════════════════════ -->
+<section id="ej6">
+  <h2>Ejercicio 6 — Diseño 3FN: empleados y proyectos</h2>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">Enunciado</span>
+      <span class="ex-title">DNI(D), Nombre(N), Apellidos(A), Código_proyecto(C), Siglas(S), Relato(R), Horas(H), Localidad(L), Provincia(P)</span>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">a) Extraer dependencias y diseñar en 3FN</div>
+      <div class="solution">
+        <div class="sol-label">Identificar dependencias del dominio</div>
+        <div class="math"><span class="kw">Del enunciado:</span>
+D → N, A, L          (el DNI identifica al empleado: nombre, apellidos, localidad)
+L → P                (la localidad determina la provincia)
+C → S, R             (el código de proyecto determina siglas y relato/descripción)
+D,C → H              (las horas son por empleado y por proyecto, conjuntamente)
+
+<span class="kw">Universo T:</span> {D, N, A, C, S, R, H, L, P}</div>
+
+        <div class="sol-label">Aplicar Ullman (el recubrimiento ya es no redundante)</div>
+        <div class="math"><span class="kw">Implicados simples ya están (todos tienen implicado simple).</span>
+<span class="kw">Clasificar atributos:</span>
+I  = {}          (ningún atributo solo aparece a la izquierda sin estar también a la derecha)
+D  = {N,A,S,R,H,P}
+ID = {D,C,L}
+N  = {}
+
+Z = {D, C}  (ambos aparecen solo a la izquierda en DC→H; D también en D→N,A,L)
+  En realidad: D aparece a la izquierda, N,A,L a la derecha; C a la izquierda, S,R a la derecha.
+  L aparece a la izquierda (L→P) y a la derecha (D→L) → ID.
+
+I  = {}  (D y C aparecen a ambos lados? D: implicante en D→N,A,L y D,C→H; implicado? no)
+  D no aparece a la derecha → I.
+  C no aparece a la derecha → I.
+  L aparece a izquierda (L→P) y derecha (D→L) → ID.
+
+I = {D, C}, D = {N,A,S,R,H,P}, ID = {L}, N = {}
+
+Z = I ∪ N = {D, C}
+DC⁺: D→N,A,L; L→P; C→S,R; DC→H → DCANL P SR H = T ✓
+→ DC es clave primaria (única clave candidata).</div>
+
+        <div class="sol-label">Subesquemas (agrupar por implicante)</div>
+        <div class="math">R₁: (D, N, A, L)    clave=D  ← datos del empleado
+R₂: (L, P)          clave=L  ← localidad → provincia
+R₃: (C, S, R)       clave=C  ← datos del proyecto
+R₄: (D, C, H)       clave=DC ← horas trabajadas
+
+¿Alguno contiene la clave DC? R₄ sí. ✓ No hace falta R₀.
+
+<strong>Esquema final en 3FN:</strong>
+EMPLEADO(D, N, A, L)          PK: D;  FK: L→LOCALIDAD
+LOCALIDAD(L, P)                PK: L
+PROYECTO(C, S, R)              PK: C
+TRABAJA_EN(D, C, H)            PK: (D,C); FK: D→EMPLEADO, C→PROYECTO</div>
+      </div>
+    </div>
+
+    <div class="sub-exercise">
+      <div class="sub-q">b) Consulta: nombre de proyectos en que trabaje empleado de "Albacete"</div>
+      <div class="solution">
+        <div class="sol-label">Álgebra relacional sobre el diseño resultante</div>
+        <div class="math"><span class="kw">Paso 1:</span> Localidades de Albacete
+  LocAlb := <span class="op">π</span><span class="attr">L</span>(<span class="op">σ</span><sub>P="Albacete"</sub>(<span class="rel">LOCALIDAD</span>))
+
+<span class="kw">Paso 2:</span> DNIs de empleados de esas localidades
+  EmpAlb := <span class="op">π</span><span class="attr">D</span>(<span class="rel">EMPLEADO</span> <span class="op">⋈</span> LocAlb)
+
+<span class="kw">Paso 3:</span> Códigos de proyecto en que trabajan
+  ProsAlb := <span class="op">π</span><span class="attr">C</span>(<span class="rel">TRABAJA_EN</span> <span class="op">⋈</span> EmpAlb)
+
+<span class="kw">Paso 4:</span> Nombres de esos proyectos
+  <span class="op">π</span><span class="attr">S</span>(<span class="rel">PROYECTO</span> <span class="op">⋈</span> ProsAlb)</div>
+        <p class="sol-explain">Navegamos de LOCALIDAD → EMPLEADO → TRABAJA_EN → PROYECTO usando joins. El resultado son las siglas (S) de los proyectos donde trabaja algún empleado cuya localidad es de la provincia de Albacete.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     EJ 7: CINES Y CARTELERAS
+═══════════════════════════════════════ -->
+<section id="ej7">
+  <h2>Ejercicio 7 — Cines y programaciones de cartelera</h2>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="ex-badge">Enunciado</span>
+      <span class="ex-title">Extraer R(T,L) y descomponer en 3FN</span>
+    </div>
+    <div class="solution">
+      <div class="sol-label">Identificar atributos del dominio</div>
+      <div class="math"><span class="kw">Del texto:</span>
+CineId (CI)     — identificador único del cine
+Calle (CA)      — calle donde se ubica el cine
+Ciudad (CU)     — ciudad del cine
+Película (PE)   — película proyectada
+Día (DI)        — día de la semana
+Hora (HO)       — hora de la proyección
+
+Universo T = {CI, CA, CU, PE, DI, HO}</div>
+
+      <div class="sol-label">Extraer dependencias del dominio (leer el enunciado con cuidado)</div>
+      <div class="math"><span class="kw">"Cada cine tiene un identificador único":</span>
+  CI → CA, CU          (el id determina la calle y ciudad del cine)
+
+<span class="kw">"En una misma ciudad no hay dos calles con el mismo nombre":</span>
+  CU, CA → CI          (ciudad + calle identifican un cine)
+
+<span class="kw">"En una misma calle hay a lo sumo un cine de la cadena":</span>
+  (ya recogido por CI → CA, CU y su inversa)
+
+<span class="kw">"Un día+hora+cine determinado proyecta una película determinada":</span>
+  CI, DI, HO → PE      (cine+día+hora determina la película)
+
+L = {CI→CA, CI→CU, CU·CA→CI, CI·DI·HO→PE}</div>
+
+      <div class="sol-label">Recubrimiento no redundante</div>
+      <div class="math">L ya tiene implicados simples. Verificamos que no hay redundancias ni atributos superfluos.
+CI·DI·HO→PE: ningún subconjunto propio de {CI,DI,HO} determina PE → dependencia total.
+CU·CA→CI: ninguno solo determina CI → total.
+
+M = L (ya es no redundante).</div>
+
+      <div class="sol-label">Calcular clave</div>
+      <div class="math">I  = {DI, HO}    (solo aparecen a la izquierda)
+D  = {PE}        (solo aparece a la derecha)
+ID = {CI, CA, CU} (aparecen a ambos lados)
+N  = {}
+
+Z = I ∪ N = {DI, HO}
+Z⁺ = DI·HO → no hay dependencias que arranquen solo de DI,HO → ≠ T.
+
+Añadir de ID:
+  CI·DI·HO⁺: CI→CA,CU; CU·CA→CI(ya); CI·DI·HO→PE → {CI,DI,HO,CA,CU,PE} = T ✓
+  → CI·DI·HO es clave candidata.
+
+  CU·CA·DI·HO⁺: CU·CA→CI; CI→CA,CU; CI·DI·HO→PE → T ✓
+  → CU·CA·DI·HO también es clave candidata.</div>
+
+      <div class="sol-label">Subesquemas con Ullman</div>
+      <div class="math"><span class="kw">Paso 3: agrupar por implicante:</span>
+Rα: T={CI,CA,CU}   L={CI→CA, CI→CU}   ← datos del cine
+Rβ: T={CU,CA,CI}   L={CU·CA→CI}       ← mismos atributos que Rα
+Rγ: T={CI,DI,HO,PE} L={CI·DI·HO→PE}  ← programación
+
+<span class="kw">Paso 4:</span> Rα y Rβ tienen los mismos atributos {CI,CA,CU}. Fusionar:
+  R_cine: T={CI,CA,CU}  L={CI→CA, CI→CU, CU·CA→CI}
+  (Rα y Rβ se fusionan porque tienen el mismo conjunto de atributos)
+
+<span class="kw">Paso 5:</span> ¿Algún subesquema contiene la clave CI·DI·HO?
+  Rγ={CI,DI,HO,PE} → sí contiene {CI,DI,HO} ✓ → no hace falta R₀.
+
+<strong>Esquema final en 3FN:</strong>
+CINE(CI, CA, CU)       PK: CI;  CK: (CU,CA)  ← dos claves candidatas
+PROGRAMACION(CI, DI, HO, PE)  PK: (CI,DI,HO); FK: CI→CINE</div>
+      <p class="sol-explain">El diseño tiene dos tablas. CINE almacena la ubicación (calle y ciudad) de cada cine, con dos claves candidatas: el identificador CI y la combinación (Ciudad, Calle). PROGRAMACION registra qué película se proyecta en cada cine, día y hora.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

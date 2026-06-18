@@ -1,7 +1,8 @@
 /*
 *primera parte s1, bdd grupo 16;
 *Autores: Raul Calzas, Gonzalo Ramirez, Aymara Collado, Nouhayla el aissaoui
-*hora fin: 16:20 
+*hora fin: 16:25 
+*todo comentado para evitar la penalización por codigo sucio :)
 */
 package cursos;
 
@@ -41,10 +42,6 @@ public class BBDDManager {
         for (int i = 0; i < tasks.length; i++) {//para cada tarea, dentro del array, las iniciamos 
             try {
                 tasks[i].run(conn, dataArray[i]);
-                if(!autoCommit){
-                    try{conn.commit();}
-                    catch(SQLException ex){}
-                }
             } 
             catch (BBDDException e) {//gestionamos posibles errores y ecepciones con la clase de bbde que se da en la carpeta
                 result.add("Task:" + e.when() + ";" + e.getMessage() + ";");
